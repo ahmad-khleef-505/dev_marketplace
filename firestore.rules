@@ -1,0 +1,427 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return signedIn()
+        && (request.auth.token.get('superAdmin', false) == true
+          || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('userType', '') == 'superAdmin'));
+    }
+
+    function ownsProject(projectId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid;
+    }
+
+    function ownsProjectAfter(projectId) {
+      return signedIn()
+        && getAfter(/databases/$(database)/documents/projects/$(projectId)).data.developerId == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.uid == userId
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.role in ['client', 'developer']
+        && (!request.resource.data.keys().hasAny(['userType'])
+          || request.resource.data.userType in ['client', 'developer'])
+        && !request.resource.data.keys().hasAny(['superAdmin', 'admin']);
+      allow get: if isSuperAdmin() || (signedIn() && request.auth.uid == userId);
+      allow list: if isSuperAdmin();
+      allow update: if (isSuperAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['userType'])
+          && request.resource.data.get('userType', '') in ['client', 'agent', 'admin'])
+        || (signedIn()
+          && request.auth.uid == userId
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['name', 'phone', 'fcmToken', 'fcmTokenUpdatedAt'])
+          && (!request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['name'])
+            || (request.resource.data.name is string
+              && request.resource.data.name.size() <= 120))
+          && (!request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['phone'])
+            || (request.resource.data.phone is string
+              && request.resource.data.phone.size() <= 32))
+          && (!request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['fcmToken', 'fcmTokenUpdatedAt'])
+            || (request.resource.data.fcmToken is string
+              && request.resource.data.fcmToken.size() <= 4096
+              && request.resource.data.fcmTokenUpdatedAt == request.time)));
+      allow delete: if isSuperAdmin();
+
+      match /favorites/{projectId} {
+        allow get, list: if signedIn() && request.auth.uid == userId;
+        allow create: if signedIn()
+          && request.auth.uid == userId
+          && request.resource.data.keys().hasOnly([
+            'projectId', 'createdAt', 'title', 'developerUid', 'developerName', 'price',
+            'imageUrl', 'projectType', 'techStack', 'averageRating',
+            'ratingCount', 'description', 'demoLink', 'isEscrow', 'views'
+          ])
+          && request.resource.data.keys().hasAll([
+            'projectId', 'createdAt', 'title', 'developerName', 'price',
+            'imageUrl', 'projectType', 'techStack', 'averageRating',
+            'ratingCount', 'description', 'demoLink', 'isEscrow', 'views'
+          ])
+          && request.resource.data.projectId == projectId
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.views is int
+          && request.resource.data.views >= 0
+          && exists(/databases/$(database)/documents/projects/$(projectId))
+          && get(/databases/$(database)/documents/projects/$(projectId)).data.status == 'approved';
+        allow update: if false;
+        allow delete: if signedIn() && request.auth.uid == userId;
+      }
+    }
+
+    match /publicDeveloperProfiles/{developerUid} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if signedIn()
+        && request.auth.uid == developerUid
+        && getAfter(/databases/$(database)/documents/users/$(developerUid)).data.role == 'developer'
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'bio', 'photoUrl'])
+        && request.resource.data.keys().hasAll(['uid', 'name'])
+        && request.resource.data.uid == developerUid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 120
+        && (!request.resource.data.keys().hasAny(['bio'])
+          || (request.resource.data.bio is string
+            && request.resource.data.bio.size() <= 2000))
+        && (!request.resource.data.keys().hasAny(['photoUrl'])
+          || (request.resource.data.photoUrl is string
+            && request.resource.data.photoUrl.size() <= 2048));
+      allow update: if (signedIn()
+          && request.auth.uid == developerUid
+          && request.resource.data.keys().hasOnly([
+            'uid', 'name', 'bio', 'photoUrl'
+          ])
+          && request.resource.data.keys().hasAll(['uid', 'name'])
+          && request.resource.data.uid == developerUid
+          && request.resource.data.name is string
+          && request.resource.data.name.size() <= 120
+          && (!request.resource.data.keys().hasAny(['bio'])
+            || (request.resource.data.bio is string
+              && request.resource.data.bio.size() <= 2000))
+          && (!request.resource.data.keys().hasAny(['photoUrl'])
+            || (request.resource.data.photoUrl is string
+              && request.resource.data.photoUrl.size() <= 2048)));
+      allow delete: if false;
+    }
+
+    match /userOnboarding/{userId} {
+      allow get: if signedIn() && request.auth.uid == userId;
+      allow list: if isSuperAdmin();
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly(['interests', 'initialRating', 'completedAt'])
+        && request.resource.data.keys().hasAll(['interests', 'initialRating', 'completedAt'])
+        && request.resource.data.interests is list
+        && request.resource.data.interests.size() > 0
+        && request.resource.data.interests.size() <= 6
+        && request.resource.data.initialRating is int
+        && request.resource.data.initialRating >= 1
+        && request.resource.data.initialRating <= 5
+        && request.resource.data.completedAt == request.time;
+      allow update, delete: if false;
+    }
+
+    match /projects/{projectId} {
+      function isValidRatingUpdate() {
+        let ratingPath = /databases/$(database)/documents/projects/$(projectId)/ratings/$(request.auth.uid);
+        let previousTotal = resource.data.get('totalRating', 0);
+        let previousCount = resource.data.get('ratingCount', 0);
+        return signedIn()
+          && resource.data.status == 'approved'
+          && resource.data.developerId != request.auth.uid
+          && !exists(ratingPath)
+          && existsAfter(ratingPath)
+          && getAfter(ratingPath).data.rating is int
+          && getAfter(ratingPath).data.rating >= 1
+          && getAfter(ratingPath).data.rating <= 5
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'totalRating', 'ratingCount', 'averageRating', 'rating'
+          ])
+          && request.resource.data.totalRating
+            == previousTotal + getAfter(ratingPath).data.rating
+          && request.resource.data.ratingCount == previousCount + 1
+          && request.resource.data.averageRating
+            == request.resource.data.totalRating / request.resource.data.ratingCount
+          && request.resource.data.rating == request.resource.data.averageRating;
+      }
+
+      function isValidViewIncrement() {
+        return signedIn()
+          && resource.data.status == 'approved'
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['views'])
+          && request.resource.data.views is int
+          && request.resource.data.views == resource.data.get('views', 0) + 1;
+      }
+
+      allow get, list: if isSuperAdmin()
+        || (signedIn() && resource.data.developerId == request.auth.uid)
+        || resource.data.status == 'approved';
+      allow create: if signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'developer'
+        && request.resource.data.developerId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.projectType in ['app', 'website']
+        && request.resource.data.price is number
+        && request.resource.data.price > 0
+        && request.resource.data.createdAt == request.time
+        && !request.resource.data.keys().hasAny(['developerPhone', 'superAdmin', 'admin']);
+      allow update: if isValidRatingUpdate()
+        || isValidViewIncrement()
+        || (isSuperAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'title', 'description', 'price', 'status'
+          ])
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.description is string
+          && request.resource.data.price is number
+          && request.resource.data.price > 0
+          && request.resource.data.status in ['pending', 'approved', 'rejected'])
+        || (signedIn()
+          && resource.data.developerId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'title', 'description', 'category', 'price', 'demoLink', 'imageUrl',
+            'techStack', 'projectType', 'updatedAt'
+          ])
+          && !request.resource.data.keys().hasAny(['developerPhone']));
+      allow delete: if isSuperAdmin();
+
+      match /ratings/{userId} {
+        allow get: if signedIn()
+          && (request.auth.uid == userId || isSuperAdmin());
+        allow list: if false;
+        allow create: if signedIn()
+          && request.auth.uid == userId
+          && !exists(/databases/$(database)/documents/projects/$(projectId)/ratings/$(userId))
+          && request.resource.data.keys().hasOnly(['rating', 'createdAt'])
+          && request.resource.data.keys().hasAll(['rating', 'createdAt'])
+          && request.resource.data.rating is int
+          && request.resource.data.rating >= 1
+          && request.resource.data.rating <= 5
+          && request.resource.data.createdAt == request.time
+          && get(/databases/$(database)/documents/projects/$(projectId)).data.status == 'approved'
+          && get(/databases/$(database)/documents/projects/$(projectId)).data.developerId != request.auth.uid
+          && getAfter(/databases/$(database)/documents/projects/$(projectId)).data.ratingCount
+            == get(/databases/$(database)/documents/projects/$(projectId)).data.get('ratingCount', 0) + 1;
+        allow update, delete: if false;
+      }
+    }
+
+    match /projectPrivateContacts/{projectId} {
+      allow get: if isSuperAdmin() || ownsProject(projectId);
+      allow list: if isSuperAdmin();
+      allow create: if ownsProjectAfter(projectId)
+        && request.resource.data.developerId == request.auth.uid
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() > 5
+        && request.resource.data.keys().hasOnly(['developerId', 'phone', 'updatedAt']);
+      allow update: if ownsProject(projectId)
+        && resource.data.developerId == request.auth.uid
+        && request.resource.data.developerId == request.auth.uid
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() > 5
+        && request.resource.data.keys().hasOnly(['developerId', 'phone', 'updatedAt']);
+      allow delete: if isSuperAdmin() || ownsProject(projectId);
+    }
+
+    match /purchaseOrders/{orderId} {
+      allow get, list: if isSuperAdmin()
+        || (signedIn() && resource.data.clientUid == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          'clientUid', 'projectId', 'projectTitle', 'developerId',
+          'developerName', 'amount', 'currency', 'createdAt', 'status'
+        ])
+        && request.resource.data.keys().hasAll([
+          'clientUid', 'projectId', 'projectTitle', 'developerId',
+          'developerName', 'amount', 'currency', 'createdAt', 'status'
+        ])
+        && request.resource.data.clientUid == request.auth.uid
+        && request.resource.data.projectId is string
+        && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))
+        && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.status == 'approved'
+        && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.developerId is string
+        && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.developerId != request.auth.uid
+        && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.title == request.resource.data.projectTitle
+        && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.developerId == request.resource.data.developerId
+        && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.developerName == request.resource.data.developerName
+        && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.price is number
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.amount == get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.price
+        && request.resource.data.currency == 'USD'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.status == 'pending_payment'
+        && exists(/databases/$(database)/documents/projectPrivateContacts/$(request.resource.data.projectId))
+        && get(/databases/$(database)/documents/projectPrivateContacts/$(request.resource.data.projectId)).data.developerId == request.resource.data.developerId
+        && get(/databases/$(database)/documents/projectPrivateContacts/$(request.resource.data.projectId)).data.phone is string
+        && get(/databases/$(database)/documents/projectPrivateContacts/$(request.resource.data.projectId)).data.phone.size() > 5;
+      allow update: if (signedIn()
+          && resource.data.clientUid == request.auth.uid
+          && resource.data.status == 'pending_payment'
+          && request.resource.data.status == 'pending_admin_review'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status', 'transferNoticeSubmittedAt'
+          ])
+          && request.resource.data.transferNoticeSubmittedAt == request.time)
+        || (isSuperAdmin()
+          && resource.data.status == 'pending_admin_review'
+          && request.resource.data.status in ['approved', 'rejected']
+          && request.resource.data.reviewedBy == request.auth.uid
+          && request.resource.data.reviewedAt == request.time
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'status', 'reviewedBy', 'reviewedAt', 'reviewReason', 'developerPhone'
+          ])
+          && (request.resource.data.status == 'approved'
+            ? request.resource.data.reviewReason == null
+              && (!request.resource.data.keys().hasAny(['developerPhone'])
+                || (exists(/databases/$(database)/documents/projectPrivateContacts/$(resource.data.projectId))
+                  && request.resource.data.developerPhone == get(/databases/$(database)/documents/projectPrivateContacts/$(resource.data.projectId)).data.phone
+                  && get(/databases/$(database)/documents/projectPrivateContacts/$(resource.data.projectId)).data.developerId == resource.data.developerId))
+            : request.resource.data.reviewReason is string
+              && request.resource.data.reviewReason.size() > 0
+              && !request.resource.data.keys().hasAny(['developerPhone'])));
+      allow delete: if false;
+    }
+
+    match /chats/{chatId} {
+      function canAccessChat() {
+        return isSuperAdmin()
+          || (signedIn()
+            && (resource.data.clientUid == request.auth.uid
+              || resource.data.developerUid == request.auth.uid));
+      }
+
+      allow get: if (signedIn()
+          && !exists(/databases/$(database)/documents/chats/$(chatId)))
+        || canAccessChat();
+      allow list: if canAccessChat();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly([
+          'projectId', 'clientUid', 'developerUid', 'createdAt',
+          'updatedAt', 'lastMessage'
+        ])
+        && request.resource.data.keys().hasAll([
+          'projectId', 'clientUid', 'developerUid', 'createdAt',
+          'updatedAt', 'lastMessage'
+        ])
+        && request.resource.data.projectId is string
+        && chatId == request.resource.data.projectId
+          + '_' + request.resource.data.clientUid
+        && request.resource.data.clientUid == request.auth.uid
+        && request.resource.data.developerUid is string
+        && request.resource.data.developerUid != request.auth.uid
+        && exists(/databases/$(database)/documents/projects/$(request.resource.data.projectId))
+        && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.status == 'approved'
+        && get(/databases/$(database)/documents/projects/$(request.resource.data.projectId)).data.developerId == request.resource.data.developerUid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.lastMessage == '';
+      allow update: if canAccessChat()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['lastMessage', 'updatedAt'])
+        && request.resource.data.lastMessage is string
+        && request.resource.data.lastMessage.size() <= 4000
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        function canAccessChatMessages() {
+          let chat = get(/databases/$(database)/documents/chats/$(chatId)).data;
+          return isSuperAdmin()
+            || (signedIn()
+              && (chat.clientUid == request.auth.uid
+                || chat.developerUid == request.auth.uid));
+        }
+
+        allow get, list: if canAccessChatMessages();
+        allow create: if canAccessChatMessages()
+          && request.resource.data.keys().hasOnly([
+            'senderId', 'senderUid', 'senderName', 'text',
+            'timestamp', 'createdAt'
+          ])
+          && request.resource.data.keys().hasAll([
+            'senderId', 'senderUid', 'senderName', 'text',
+            'timestamp', 'createdAt'
+          ])
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.senderUid == request.auth.uid
+          && request.resource.data.senderName is string
+          && request.resource.data.senderName.size() > 0
+          && request.resource.data.senderName.size() <= 100
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 4000
+          && request.resource.data.timestamp == request.time
+          && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
+      }
+    }
+
+    match /projectChats/{projectId}/participants/{participantUid} {
+      allow get: if isSuperAdmin()
+        || ownsProject(projectId)
+        || (signedIn() && request.auth.uid == participantUid);
+      allow list: if false;
+      allow create: if signedIn()
+        && request.auth.uid == participantUid
+        && request.resource.data.keys().hasOnly([
+          'projectId', 'clientUid', 'orderId', 'createdAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'projectId', 'clientUid', 'orderId', 'createdAt'
+        ])
+        && request.resource.data.projectId == projectId
+        && request.resource.data.clientUid == request.auth.uid
+        && request.resource.data.orderId is string
+        && request.resource.data.createdAt == request.time
+        && exists(/databases/$(database)/documents/purchaseOrders/$(request.resource.data.orderId))
+        && get(/databases/$(database)/documents/purchaseOrders/$(request.resource.data.orderId)).data.clientUid == request.auth.uid
+        && get(/databases/$(database)/documents/purchaseOrders/$(request.resource.data.orderId)).data.projectId == projectId
+        && get(/databases/$(database)/documents/purchaseOrders/$(request.resource.data.orderId)).data.status == 'approved';
+      allow update, delete: if false;
+    }
+
+    match /projectChats/{projectId}/messages/{messageId} {
+      function canAccessProjectChat() {
+        return isSuperAdmin()
+          || ownsProject(projectId)
+          || (signedIn()
+            && exists(/databases/$(database)/documents/projectChats/$(projectId)/participants/$(request.auth.uid))
+            && get(/databases/$(database)/documents/projectChats/$(projectId)/participants/$(request.auth.uid)).data.clientUid == request.auth.uid
+            && get(/databases/$(database)/documents/projectChats/$(projectId)/participants/$(request.auth.uid)).data.projectId == projectId);
+      }
+
+      allow get, list: if canAccessProjectChat();
+      allow create: if canAccessProjectChat()
+        && request.resource.data.keys().hasOnly(['senderUid', 'text', 'createdAt'])
+        && request.resource.data.keys().hasAll(['senderUid', 'text', 'createdAt'])
+        && request.resource.data.senderUid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 4000
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    match /orders/{orderId} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

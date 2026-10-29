@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "18451032455",
+    "project_id": "devmarketplace-5e82d",
+    "storage_bucket": "devmarketplace-5e82d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:18451032455:android:29ee3a485e9f13aa358b22",
+        "android_client_info": {
+          "package_name": "com.example.dev_marketplace"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuZ_FRgdQUKjurwlMCJKC_nqFdw6yKPrk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
