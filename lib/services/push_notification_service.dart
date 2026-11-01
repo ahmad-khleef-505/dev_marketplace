@@ -51,7 +51,8 @@ class PushNotificationService {
     _initialized = true;
 
     const initializationSettings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      // 👇 تم تعديل هذا السطر هنا 👇
+      android: AndroidInitializationSettings('@mipmap/launcher_icon'),
       iOS: DarwinInitializationSettings(),
     );
     await _localNotifications.initialize(settings: initializationSettings);
@@ -118,8 +119,6 @@ class PushNotificationService {
         },
       );
 
-      // FCM's current Flutter plugin still exposes getToken for the device token
-      // required by the app's notification sender.
       // ignore: deprecated_member_use
       final token = await FirebaseMessaging.instance.getToken(
         vapidKey: kIsWeb ? _webVapidKey : null,
