@@ -46,7 +46,7 @@ class ProjectCard extends StatelessWidget {
     this.isEscrow = true,
     this.ratingCount = 0,
     this.views = 0,
-    this.horizontal = false,
+    this.horizontal = true,
   });
 
   Future<void> _recordView(BuildContext context) async {
@@ -114,362 +114,357 @@ class ProjectCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return _HoverProjectCard(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: RepaintBoundary(
-          child: Container(
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(
-                alpha: 0.96,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: colorScheme.outlineVariant, width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colorScheme.outlineVariant),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow.withValues(alpha: 0.12),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-            child: horizontal
-                ? _buildHorizontalContents(context)
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Stack(
-                        children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(20),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: RepaintBoundary(
+          child: horizontal
+              ? _buildHorizontalContents(context)
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(20),
+                          ),
+                          child: Hero(
+                            tag: 'project-image-$projectId',
+                            child: _ProjectCardImage(imageUrl: imageUrl),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 12,
+                          left: 12,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
                             ),
-                            child: Hero(
-                              tag: 'project-image-$projectId',
-                              child: _ProjectCardImage(imageUrl: imageUrl),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF3B82F6),
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFF3B82F6,
+                                  ).withValues(alpha: 0.5),
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              '\$${price.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                color: colorScheme.onPrimary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
+                        ),
+                        PositionedDirectional(
+                          top: 12,
+                          start: 12,
+                          child: _FavoriteProjectButton(
+                            projectId: projectId,
+                            title: title,
+                            developerUid: developerUid,
+                            developerName: developerName,
+                            price: price,
+                            imageUrl: imageUrl,
+                            projectType: projectType,
+                            techStack: techStack,
+                            rating: rating,
+                            ratingCount: ratingCount,
+                            description: description,
+                            demoLink: demoLink,
+                            isEscrow: isEscrow,
+                            views: views,
+                          ),
+                        ),
+                        if (isEscrow)
                           Positioned(
-                            bottom: 12,
-                            left: 12,
+                            top: 12,
+                            right: 12,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF3B82F6),
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(
-                                      0xFF3B82F6,
-                                    ).withValues(alpha: 0.5),
-                                    blurRadius: 10,
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                '\$${price.toStringAsFixed(2)}',
-                                style: TextStyle(
-                                  color: colorScheme.onPrimary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                          PositionedDirectional(
-                            top: 12,
-                            start: 12,
-                            child: _FavoriteProjectButton(
-                              projectId: projectId,
-                              title: title,
-                              developerUid: developerUid,
-                              developerName: developerName,
-                              price: price,
-                              imageUrl: imageUrl,
-                              projectType: projectType,
-                              techStack: techStack,
-                              rating: rating,
-                              ratingCount: ratingCount,
-                              description: description,
-                              demoLink: demoLink,
-                              isEscrow: isEscrow,
-                              views: views,
-                            ),
-                          ),
-                          if (isEscrow)
-                            Positioned(
-                              top: 12,
-                              right: 12,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(
-                                    0xFF10B981,
-                                  ).withValues(alpha: 0.9),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.verified_user,
-                                      size: 14,
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'Escrow',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              title,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 16,
-                                height: 1.4,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 9,
-                                vertical: 5,
+                                horizontal: 8,
+                                vertical: 4,
                               ),
                               decoration: BoxDecoration(
                                 color: const Color(
-                                  0xFF3B82F6,
-                                ).withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(7),
-                                border: Border.all(
-                                  color: const Color(
-                                    0xFF3B82F6,
-                                  ).withValues(alpha: 0.45),
-                                ),
+                                  0xFF10B981,
+                                ).withValues(alpha: 0.9),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    projectType == 'website'
-                                        ? Icons.language
-                                        : Icons.phone_iphone,
-                                    size: 15,
-                                    color: const Color(0xFF60A5FA),
+                                    Icons.verified_user,
+                                    size: 14,
+                                    color: Colors.white,
                                   ),
-                                  const SizedBox(width: 5),
+                                  SizedBox(width: 4),
                                   Text(
-                                    projectType == 'website'
-                                        ? 'موقع (Website)'
-                                        : 'تطبيق (App)',
+                                    'Escrow',
                                     style: TextStyle(
-                                      color: colorScheme.onSurfaceVariant,
-                                      fontSize: 11,
+                                      color: Colors.white,
+                                      fontSize: 10,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 8),
-
-                            Wrap(
-                              alignment: WrapAlignment.spaceBetween,
-                              runSpacing: 8,
+                          ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 16,
+                              height: 1.4,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(
+                                0xFF3B82F6,
+                              ).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(7),
+                              border: Border.all(
+                                color: const Color(
+                                  0xFF3B82F6,
+                                ).withValues(alpha: 0.45),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 10,
-                                      backgroundColor:
-                                          colorScheme.surfaceContainerHighest,
-                                      child: Icon(
-                                        Icons.person,
-                                        size: 14,
-                                        color: colorScheme.onSurface,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    ConstrainedBox(
-                                      constraints: const BoxConstraints(
-                                        maxWidth: 130,
-                                      ),
-                                      child: Text(
-                                        developerName,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: colorScheme.onSurfaceVariant,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                Icon(
+                                  projectType == 'website'
+                                      ? Icons.language
+                                      : Icons.phone_iphone,
+                                  size: 15,
+                                  color: const Color(0xFF60A5FA),
                                 ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.visibility_outlined,
-                                      size: 15,
-                                      color: Color(0xFF64748B),
+                                const SizedBox(width: 5),
+                                Text(
+                                  projectType == 'website'
+                                      ? 'موقع (Website)'
+                                      : 'تطبيق (App)',
+                                  style: TextStyle(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            runSpacing: 8,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 10,
+                                    backgroundColor:
+                                        colorScheme.surfaceContainerHighest,
+                                    child: Icon(
+                                      Icons.person,
+                                      size: 14,
+                                      color: colorScheme.onSurface,
                                     ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      views.toString(),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 130,
+                                    ),
+                                    child: Text(
+                                      developerName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                        color: Color(0xFF64748B),
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    const Icon(
-                                      Icons.star,
-                                      size: 16,
-                                      color: Color(0xFFF59E0B),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      ratingCount > 0
-                                          ? rating.toStringAsFixed(1)
-                                          : 'جديد',
-                                      style: const TextStyle(
-                                        color: Color(0xFF94A3B8),
+                                        color: colorScheme.onSurfaceVariant,
                                         fontSize: 13,
                                       ),
                                     ),
-                                    if (ratingCount > 0) ...[
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '($ratingCount)',
-                                        style: const TextStyle(
-                                          color: Color(0xFF64748B),
-                                          fontSize: 10,
-                                        ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.visibility_outlined,
+                                    size: 15,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    views.toString(),
+                                    style: TextStyle(
+                                      color: Color(0xFF64748B),
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Icon(
+                                    Icons.star,
+                                    size: 16,
+                                    color: Color(0xFFF59E0B),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    ratingCount > 0
+                                        ? rating.toStringAsFixed(1)
+                                        : 'جديد',
+                                    style: const TextStyle(
+                                      color: Color(0xFF94A3B8),
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  if (ratingCount > 0) ...[
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '($ratingCount)',
+                                      style: const TextStyle(
+                                        color: Color(0xFF64748B),
+                                        fontSize: 10,
                                       ),
-                                    ],
+                                    ),
                                   ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
 
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 6,
-                              children: techStack
-                                  .map(
-                                    (tech) => Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF0F172A),
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(
-                                          color: const Color(0xFF334155),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        tech,
-                                        style: TextStyle(
-                                          color: colorScheme.onSurfaceVariant,
-                                          fontSize: 11,
-                                        ),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: techStack
+                                .map(
+                                  (tech) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF0F172A),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: const Color(0xFF334155),
                                       ),
                                     ),
-                                  )
-                                  .toList(),
-                            ),
-                            const Divider(color: Color(0xFF334155), height: 24),
-
-                            // أزرار التحكم
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: OutlinedButton(
-                                    onPressed: () =>
-                                        _openProjectDetails(context),
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: const Color(0xFF3B82F6),
-                                      side: const BorderSide(
-                                        color: Color(0xFF3B82F6),
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 10,
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'عرض التفاصيل',
+                                    child: Text(
+                                      tech,
                                       style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
+                                        color: colorScheme.onSurfaceVariant,
+                                        fontSize: 11,
                                       ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  flex: 2,
-                                  child: ElevatedButton.icon(
-                                    onPressed: () => _openWhatsApp(context),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF25D366),
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 10,
-                                      ),
+                                )
+                                .toList(),
+                          ),
+                          const Divider(color: Color(0xFF334155), height: 24),
+
+                          // أزرار التحكم
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: OutlinedButton(
+                                  onPressed: () => _openProjectDetails(context),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFF3B82F6),
+                                    side: const BorderSide(
+                                      color: Color(0xFF3B82F6),
                                     ),
-                                    icon: const Icon(Icons.chat, size: 14),
-                                    label: const Text(
-                                      'تواصل',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 10,
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'عرض التفاصيل',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                          ],
-                        ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                flex: 2,
+                                child: ElevatedButton.icon(
+                                  onPressed: () => _openWhatsApp(context),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF25D366),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 10,
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.chat, size: 14),
+                                  label: const Text(
+                                    'تواصل',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-          ),
+                    ),
+                  ],
+                ),
         ),
       ),
     ).animate().fadeIn(duration: 220.ms);
@@ -477,130 +472,173 @@ class ProjectCard extends StatelessWidget {
 
   Widget _buildHorizontalContents(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return SizedBox(
-      height: 164,
-      child: Row(
-        children: [
-          Expanded(
-            flex: 5,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Hero(
-                  tag: 'project-image-$projectId',
-                  child: _ProjectCardImage(imageUrl: imageUrl),
-                ),
-                PositionedDirectional(
-                  top: 8,
-                  start: 8,
-                  child: _FavoriteProjectButton(
-                    projectId: projectId,
-                    title: title,
-                    developerUid: developerUid,
-                    developerName: developerName,
-                    price: price,
-                    imageUrl: imageUrl,
-                    projectType: projectType,
-                    techStack: techStack,
-                    rating: rating,
-                    ratingCount: ratingCount,
-                    description: description,
-                    demoLink: demoLink,
-                    isEscrow: isEscrow,
-                    views: views,
-                  ),
-                ),
-                Positioned(
-                  bottom: 8,
-                  left: 8,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: colorScheme.primary,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 5,
-                      ),
-                      child: Text(
-                        '\$${price.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          color: colorScheme.onPrimary,
-                          fontWeight: FontWeight.bold,
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Directionality(
+                        textDirection: TextDirection.rtl,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    color: colorScheme.onSurface,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.person_outline,
+                                  size: 16,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    developerName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.star_rounded,
+                                  size: 17,
+                                  color: Color(0xFFF59E0B),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  ratingCount > 0
+                                      ? '${rating.toStringAsFixed(1)} ($ratingCount)'
+                                      : 'جديد',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                ),
+                                const Spacer(),
+                                if (isEscrow)
+                                  Icon(
+                                    Icons.verified_user_outlined,
+                                    size: 17,
+                                    color: colorScheme.secondary,
+                                    semanticLabel: 'دفع آمن',
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              '\$${price.toStringAsFixed(2)}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Hero(
+                          tag: 'project-image-$projectId',
+                          child: _ProjectCardImage(imageUrl: imageUrl),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 7,
-            child: Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(12, 10, 12, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              ),
+              const SizedBox(height: 10),
+              Row(
                 children: [
-                  Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => _openProjectDetails(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 9),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      child: const Text('التفاصيل'),
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.person_outline,
-                        size: 16,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          developerName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: colorScheme.onSurfaceVariant),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => _openProjectDetails(context),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            visualDensity: VisualDensity.compact,
-                          ),
-                          child: const Text('التفاصيل'),
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'تواصل',
-                        onPressed: () => _openWhatsApp(context),
-                        icon: const Icon(Icons.chat_outlined),
-                        color: colorScheme.primary,
-                      ),
-                    ],
+                  const SizedBox(width: 8),
+                  IconButton.filledTonal(
+                    tooltip: 'تواصل مع المطور',
+                    onPressed: () => _openWhatsApp(context),
+                    style: IconButton.styleFrom(
+                      foregroundColor: colorScheme.primary,
+                      backgroundColor: colorScheme.secondaryContainer,
+                      fixedSize: const Size(40, 40),
+                    ),
+                    icon: const Icon(Icons.chat_bubble_outline, size: 18),
                   ),
                 ],
               ),
+            ],
+          ),
+        ),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: Material(
+            color: colorScheme.surface.withValues(alpha: 0.82),
+            shape: const CircleBorder(),
+            child: _FavoriteProjectButton(
+              projectId: projectId,
+              title: title,
+              developerUid: developerUid,
+              developerName: developerName,
+              price: price,
+              imageUrl: imageUrl,
+              projectType: projectType,
+              techStack: techStack,
+              rating: rating,
+              ratingCount: ratingCount,
+              description: description,
+              demoLink: demoLink,
+              isEscrow: isEscrow,
+              views: views,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -661,6 +699,7 @@ class _ProjectCardImageState extends State<_ProjectCardImage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return MouseRegion(
       onEnter: kIsWeb ? (_) => setState(() => _isHovered = true) : null,
       onExit: kIsWeb ? (_) => setState(() => _isHovered = false) : null,
@@ -670,13 +709,13 @@ class _ProjectCardImageState extends State<_ProjectCardImage> {
           duration: const Duration(milliseconds: 250),
           child: CachedNetworkImage(
             imageUrl: widget.imageUrl,
-            height: 160,
-            width: double.infinity,
+            height: 100,
+            width: 100,
             fit: BoxFit.cover,
             placeholder: (context, url) => Container(
-              height: 160,
-              width: double.infinity,
-              color: const Color(0xFF111C30),
+              height: 100,
+              width: 100,
+              color: colorScheme.surfaceContainerHighest,
               alignment: Alignment.center,
               child: const SizedBox(
                 width: 26,
@@ -688,14 +727,14 @@ class _ProjectCardImageState extends State<_ProjectCardImage> {
               ),
             ),
             errorWidget: (context, url, error) => Container(
-              height: 160,
-              width: double.infinity,
-              color: const Color(0xFF111C30),
+              height: 100,
+              width: 100,
+              color: colorScheme.surfaceContainerHighest,
               alignment: Alignment.center,
-              child: const Icon(
+              child: Icon(
                 Icons.broken_image,
-                color: Color(0xFF64748B),
-                size: 50,
+                color: colorScheme.onSurfaceVariant,
+                size: 30,
               ),
             ),
           ),

@@ -146,6 +146,10 @@ class _SmartPriceMatcherState extends State<SmartPriceMatcher> {
                       final fields = [
                         TextFormField(
                           controller: _keywordController,
+                          scrollPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 24,
+                          ),
                           textInputAction: TextInputAction.next,
                           decoration: _inputDecoration(
                             label: 'كلمة مفتاحية (اختياري)',
@@ -180,6 +184,10 @@ class _SmartPriceMatcherState extends State<SmartPriceMatcher> {
                         ),
                         TextFormField(
                           controller: _budgetController,
+                          scrollPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 24,
+                          ),
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
@@ -202,6 +210,10 @@ class _SmartPriceMatcherState extends State<SmartPriceMatcher> {
                         ),
                         TextFormField(
                           controller: _durationController,
+                          scrollPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 24,
+                          ),
                           keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.search,
                           onFieldSubmitted: (_) => _search(),

@@ -257,7 +257,7 @@ class DeveloperPublicProfileScreen extends StatelessWidget {
                                       crossAxisCount: columns,
                                       crossAxisSpacing: 16,
                                       mainAxisSpacing: 16,
-                                      mainAxisExtent: 430,
+                                      mainAxisExtent: 184,
                                     ),
                                 itemBuilder: (context, index) {
                                   final project = approvedProjects[index];

@@ -81,7 +81,7 @@ class FavoritesScreen extends StatelessWidget {
                     itemBuilder: (context, index) => index == favorites.length
                         ? const AppFooter()
                         : SizedBox(
-                            height: 420,
+                            height: 184,
                             child: _favoriteCard(favorites[index]),
                           ),
                   );
@@ -102,7 +102,7 @@ class FavoritesScreen extends StatelessWidget {
                         crossAxisCount: columns,
                         crossAxisSpacing: 18,
                         mainAxisSpacing: 18,
-                        mainAxisExtent: 430,
+                        mainAxisExtent: 184,
                       ),
                       itemBuilder: (context, index) =>
                           _favoriteCard(favorites[index]),

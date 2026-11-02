@@ -823,7 +823,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                       crossAxisCount: columns,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
-                      mainAxisExtent: 420,
+                      mainAxisExtent: 184,
                     ),
                     itemBuilder: (context, index) => const ShimmerCard(),
                   );
@@ -947,7 +947,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                                     const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 1,
                                   mainAxisSpacing: 18,
-                                  mainAxisExtent: 430,
+                                  mainAxisExtent: 184,
                                 ),
                                 itemBuilder: (context, itemIndex) {
                                   final index = column + itemIndex * columns;

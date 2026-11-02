@@ -83,7 +83,7 @@ class _MainScreenState extends State<MainScreen> {
       child: destinations[selectedIndex].screen,
     );
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       appBar: isDesktopWeb
           ? AppBar(
               titleSpacing: 28,
@@ -146,53 +146,45 @@ class _MainScreenState extends State<MainScreen> {
       body: Stack(
         children: [
           const Positioned(top: 0, left: 80, child: _AmbientGlow()),
-          Positioned.fill(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: isDesktopWeb ? 108 : 98),
-              child: Column(
-                children: [
-                  _buildWelcomeBanner(isDesktopWeb: isDesktopWeb),
-                  Expanded(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
-                      transitionBuilder: (child, animation) => FadeTransition(
-                        opacity: animation,
-                        child: SlideTransition(
-                          position: animation.drive(
-                            Tween<Offset>(
-                              begin: const Offset(0.02, 0),
-                              end: Offset.zero,
-                            ).chain(CurveTween(curve: Curves.easeOutCubic)),
-                          ),
-                          child: child,
-                        ),
+          Column(
+            children: [
+              _buildWelcomeBanner(isDesktopWeb: isDesktopWeb),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, animation) => FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: animation.drive(
+                        Tween<Offset>(
+                          begin: const Offset(0.02, 0),
+                          end: Offset.zero,
+                        ).chain(CurveTween(curve: Curves.easeOutCubic)),
                       ),
-                      child: content,
+                      child: child,
                     ),
                   ),
-                ],
+                  child: content,
+                ),
               ),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: RepaintBoundary(
-                  child: _FloatingNavigationBar(
-                    destinations: destinations,
-                    selectedIndex: selectedIndex,
-                    onSelected: (index) =>
-                        setState(() => _currentIndex = index),
-                    isDesktop: isDesktopWeb,
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: RepaintBoundary(
+                    child: _FloatingNavigationBar(
+                      destinations: destinations,
+                      selectedIndex: selectedIndex,
+                      onSelected: (index) =>
+                          setState(() => _currentIndex = index),
+                      isDesktop: isDesktopWeb,
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),
