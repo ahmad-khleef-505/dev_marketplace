@@ -34,13 +34,20 @@ jobs:
           echo "Required Android signing secrets are not configured." >&2
           exit 1
         fi
-
-        printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/upload-keystore.jks
+        
+        # 👇 تنظيف المفاتيح من أي مسافات أو أسطر جديدة مخفية 👇
+        CLEAN_KEYSTORE=$(echo "$ANDROID_KEYSTORE_BASE64" | tr -d '\n\r ')
+        CLEAN_STORE_PASS=$(echo "$ANDROID_KEYSTORE_PASSWORD" | tr -d '\n\r ')
+        CLEAN_ALIAS=$(echo "$ANDROID_KEY_ALIAS" | tr -d '\n\r ')
+        CLEAN_KEY_PASS=$(echo "$ANDROID_KEY_PASSWORD" | tr -d '\n\r ')
+        
+        printf '%s' "$CLEAN_KEYSTORE" | base64 --decode > android/upload-keystore.jks
         test -s android/upload-keystore.jks
+        
         printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=upload-keystore.jks\n' \
-          "$ANDROID_KEYSTORE_PASSWORD" \
-          "$ANDROID_KEY_PASSWORD" \
-          "$ANDROID_KEY_ALIAS" > android/key.properties
+          "$CLEAN_STORE_PASS" \
+          "$CLEAN_KEY_PASS" \
+          "$CLEAN_ALIAS" > android/key.properties
         
     - name: Clean and Get dependencies
       run: |
