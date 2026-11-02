@@ -242,18 +242,18 @@ class _MainScreenState extends State<MainScreen> {
                     children: [
                       Text(
                         'مرحباً بك في سوق المبرمجين',
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.cairo(
                           color: Colors.white,
                           fontSize: isDesktopWeb ? 18 : 15,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'مدير التطبيق ومبرمجه : أحمد الخليف',
-                        maxLines: 1,
+                        'مدير التطبيق ومبرمجه: أحمد الخليف',
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.cairo(
                           color: const Color(0xFF93C5FD),

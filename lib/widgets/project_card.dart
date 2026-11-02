@@ -176,9 +176,9 @@ class ProjectCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        PositionedDirectional(
-                          top: 12,
-                          start: 12,
+                        Positioned(
+                          top: 8,
+                          right: 8,
                           child: _FavoriteProjectButton(
                             projectId: projectId,
                             title: title,
@@ -199,7 +199,7 @@ class ProjectCard extends StatelessWidget {
                         if (isEscrow)
                           Positioned(
                             top: 12,
-                            right: 12,
+                            left: 12,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
@@ -857,7 +857,7 @@ class _FavoriteIconButtonState extends State<_FavoriteIconButton> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Material(
-      color: colorScheme.surface.withValues(alpha: 0.9),
+      color: Colors.black.withValues(alpha: 0.4),
       shape: const CircleBorder(),
       child: IconButton(
         tooltip: widget.isFavorite ? 'إزالة من المفضلة' : 'أضف إلى المفضلة',
