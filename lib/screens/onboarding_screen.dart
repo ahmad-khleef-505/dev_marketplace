@@ -170,10 +170,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             )
           : Scaffold(
-              backgroundColor: const Color(0xFF0F172A),
               appBar: AppBar(
                 title: const Text('رأيك يصنع الفرق'),
-                backgroundColor: const Color(0xFF1E293B),
                 automaticallyImplyLeading: false,
               ),
               body: SafeArea(child: _buildFeedbackForm()),
@@ -182,6 +180,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildFeedbackForm() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 820),
@@ -219,7 +218,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: GlassPanel(
-                    color: const Color(0xFF1E293B),
                     borderRadius: 10,
                     child: CheckboxListTile(
                       value: selected,
@@ -243,13 +241,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       onChanged: _isSending
                           ? null
                           : (value) => setState(() {
-                              if (value == true) {
-                                _selectedFeatures.add(index);
-                              } else {
-                                _selectedFeatures.remove(index);
-                              }
-                              _selectionError = null;
-                            }),
+                                if (value == true) {
+                                  _selectedFeatures.add(index);
+                                } else {
+                                  _selectedFeatures.remove(index);
+                                }
+                                _selectionError = null;
+                              }),
                     ),
                   ),
                 );
@@ -263,7 +261,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ],
               const SizedBox(height: 12),
               TextFormField(
-                style: const TextStyle(color: Colors.white, fontSize: 16),
                 controller: _suggestionController,
                 enabled: !_isSending,
                 minLines: 3,
@@ -273,13 +270,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   labelText: 'ميزة أخرى تقترحها؟',
                   alignLabelWithHint: true,
                   filled: true,
-                  fillColor: const Color(0xFF1E293B),
+                  fillColor: colorScheme.surfaceContainerHighest,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                validator: (_) =>
-                    _selectedFeatures.isEmpty &&
+                validator: (_) => _selectedFeatures.isEmpty &&
                         _suggestionController.text.trim().isEmpty
                     ? 'اختر ميزة أو اكتب اقتراحاً قبل الإرسال.'
                     : null,
@@ -288,9 +284,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               SizedBox(
                 height: 50,
                 child: ElevatedButton.icon(
-                  onPressed: _isSending
-                      ? null
-                      : () => _sendFeedback(byEmail: false),
+                  onPressed:
+                      _isSending ? null : () => _sendFeedback(byEmail: false),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF25D366),
                     foregroundColor: Colors.white,
@@ -306,9 +301,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               SizedBox(
                 height: 50,
                 child: OutlinedButton.icon(
-                  onPressed: _isSending
-                      ? null
-                      : () => _sendFeedback(byEmail: true),
+                  onPressed:
+                      _isSending ? null : () => _sendFeedback(byEmail: true),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side: const BorderSide(color: Color(0xFF3B82F6)),

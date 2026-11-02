@@ -64,8 +64,7 @@ class _ProjectChatScreenState extends State<ProjectChatScreen> {
     _isProjectOwner = developerId == user.uid;
 
     final userDocument = await userRepository.getUserProfile(user.uid);
-    _isSuperAdmin =
-        userDocument?['userType'] == 'superAdmin' ||
+    _isSuperAdmin = userDocument?['userType'] == 'superAdmin' ||
         await authProvider.hasSuperAdminClaim();
 
     if (_isProjectOwner || _isSuperAdmin) return;
@@ -119,11 +118,11 @@ class _ProjectChatScreenState extends State<ProjectChatScreen> {
       final senderName =
           user.displayName ?? user.email?.split('@').first ?? 'مستخدم';
       await context.read<ProjectChatRepository>().sendMessage(
-        chatId: chatId,
-        senderId: user.uid,
-        senderName: senderName,
-        text: text,
-      );
+            chatId: chatId,
+            senderId: user.uid,
+            senderName: senderName,
+            text: text,
+          );
       _messageController.clear();
     } catch (error) {
       if (mounted) {
@@ -148,9 +147,8 @@ class _ProjectChatScreenState extends State<ProjectChatScreen> {
     String currentUid,
   ) {
     final name = message.senderName.trim();
-    final displayName = name.isNotEmpty
-        ? name
-        : _senderLabel(senderUid, currentUid);
+    final displayName =
+        name.isNotEmpty ? name : _senderLabel(senderUid, currentUid);
     const style = TextStyle(
       color: Color(0xFF60A5FA),
       fontWeight: FontWeight.bold,
@@ -165,10 +163,9 @@ class _ProjectChatScreenState extends State<ProjectChatScreen> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().currentUser;
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B),
         automaticallyImplyLeading: false,
         leading: IconButton(
           tooltip: (_isProjectOwner || _isSuperAdmin) && _selectedChatId != null
@@ -304,58 +301,58 @@ class _ProjectChatScreenState extends State<ProjectChatScreen> {
                               final isOwnMessage = senderUid == user?.uid;
                               final sentAt = message.sentAt;
                               return Align(
-                                    alignment: isOwnMessage
-                                        ? AlignmentDirectional.centerStart
-                                        : AlignmentDirectional.centerEnd,
-                                    child: Container(
-                                      constraints: const BoxConstraints(
-                                        maxWidth: 680,
+                                alignment: isOwnMessage
+                                    ? AlignmentDirectional.centerStart
+                                    : AlignmentDirectional.centerEnd,
+                                child: Container(
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 680,
+                                  ),
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isOwnMessage
+                                        ? const Color(0xFF1E3A5F)
+                                        : const Color(0xFF1E293B),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: const Color(0xFF334155),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      _buildSenderName(
+                                        message,
+                                        senderUid,
+                                        user?.uid ?? '',
                                       ),
-                                      margin: const EdgeInsets.only(bottom: 12),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: isOwnMessage
-                                            ? const Color(0xFF1E3A5F)
-                                            : const Color(0xFF1E293B),
-                                        borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                          color: const Color(0xFF334155),
+                                      const SizedBox(height: 5),
+                                      Text(
+                                        message.text,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          height: 1.45,
                                         ),
                                       ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          _buildSenderName(
-                                            message,
-                                            senderUid,
-                                            user?.uid ?? '',
+                                      if (sentAt != null) ...[
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          '${sentAt.hour.toString().padLeft(2, '0')}:${sentAt.minute.toString().padLeft(2, '0')}',
+                                          style: const TextStyle(
+                                            color: Color(0xFF94A3B8),
+                                            fontSize: 11,
                                           ),
-                                          const SizedBox(height: 5),
-                                          Text(
-                                            message.text,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              height: 1.45,
-                                            ),
-                                          ),
-                                          if (sentAt != null) ...[
-                                            const SizedBox(height: 5),
-                                            Text(
-                                              '${sentAt.hour.toString().padLeft(2, '0')}:${sentAt.minute.toString().padLeft(2, '0')}',
-                                              style: const TextStyle(
-                                                color: Color(0xFF94A3B8),
-                                                fontSize: 11,
-                                              ),
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    ),
-                                  )
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              )
                                   .animate(
                                     delay: Duration(
                                       milliseconds: index.clamp(0, 12) * 8,
@@ -370,10 +367,10 @@ class _ProjectChatScreenState extends State<ProjectChatScreen> {
                     ),
                     Container(
                       padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF111B2D),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainer,
                         border: Border(
-                          top: BorderSide(color: Color(0xFF26364F)),
+                          top: BorderSide(color: colorScheme.outlineVariant),
                         ),
                       ),
                       child: Row(
@@ -387,25 +384,21 @@ class _ProjectChatScreenState extends State<ProjectChatScreen> {
                               maxLength: 4000,
                               textInputAction: TextInputAction.send,
                               onSubmitted: (_) => _sendMessage(),
-                              style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
                                 hintText: 'اكتب رسالتك عن هذا المشروع...',
-                                hintStyle: const TextStyle(
-                                  color: Colors.white54,
-                                ),
                                 filled: true,
-                                fillColor: const Color(0xFF1E293B),
+                                fillColor: colorScheme.surfaceContainerHighest,
                                 counterText: '',
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF334155),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outlineVariant,
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF334155),
+                                  borderSide: BorderSide(
+                                    color: colorScheme.outlineVariant,
                                   ),
                                 ),
                               ),
@@ -418,8 +411,8 @@ class _ProjectChatScreenState extends State<ProjectChatScreen> {
                             child: IconButton.filled(
                               onPressed: _isSending ? null : _sendMessage,
                               style: IconButton.styleFrom(
-                                backgroundColor: const Color(0xFF3B82F6),
-                                foregroundColor: Colors.white,
+                                backgroundColor: colorScheme.primary,
+                                foregroundColor: colorScheme.onPrimary,
                               ),
                               icon: _isSending
                                   ? const SizedBox(
@@ -450,10 +443,10 @@ class _ProjectChatScreenState extends State<ProjectChatScreen> {
   Widget _buildConversationList() {
     return StreamBuilder<List<ProjectChat>>(
       stream: context.read<ProjectChatRepository>().watchProjectConversations(
-        projectId: widget.projectId,
-        developerUid: _developerId ?? '',
-        isSuperAdmin: _isSuperAdmin,
-      ),
+            projectId: widget.projectId,
+            developerUid: _developerId ?? '',
+            isSuperAdmin: _isSuperAdmin,
+          ),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(

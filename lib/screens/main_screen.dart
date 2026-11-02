@@ -10,7 +10,6 @@ import 'favorites_screen.dart';
 import 'marketplace_screen.dart';
 import 'messages_screen.dart';
 import 'profile_screen.dart';
-import '../widgets/app_footer.dart';
 import '../widgets/glass_panel.dart';
 
 class MainScreen extends StatefulWidget {
@@ -84,12 +83,9 @@ class _MainScreenState extends State<MainScreen> {
       child: destinations[selectedIndex].screen,
     );
     return Scaffold(
-      backgroundColor: const Color(0xFF080D19),
+      resizeToAvoidBottomInset: false,
       appBar: isDesktopWeb
           ? AppBar(
-              backgroundColor: const Color(0xFF080D19),
-              surfaceTintColor: Colors.transparent,
-              elevation: 0,
               titleSpacing: 28,
               title: Row(
                 children: [
@@ -118,7 +114,7 @@ class _MainScreenState extends State<MainScreen> {
                   Text(
                     'DevMarketplace',
                     style: GoogleFonts.cairo(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w800,
                       fontSize: 17,
                     ),
@@ -133,7 +129,7 @@ class _MainScreenState extends State<MainScreen> {
                   Text(
                     'منتجات رقمية مختارة بعناية',
                     style: GoogleFonts.cairo(
-                      color: const Color(0xFF94A3B8),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 12,
                     ),
                   ),
@@ -176,7 +172,6 @@ class _MainScreenState extends State<MainScreen> {
                       child: content,
                     ),
                   ),
-                  const RepaintBoundary(child: AppFooter()),
                 ],
               ),
             ),
@@ -425,9 +420,8 @@ class _FloatingNavigationItemState extends State<_FloatingNavigationItem> {
                             ? const Color(0xFFDBEAFE)
                             : const Color(0xFF94A3B8),
                         fontSize: widget.compact ? 10 : 11,
-                        fontWeight: widget.selected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
+                        fontWeight:
+                            widget.selected ? FontWeight.w700 : FontWeight.w500,
                       ),
                     ),
                   ),

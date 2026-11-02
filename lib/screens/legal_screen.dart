@@ -51,14 +51,8 @@ class LegalScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF080D19),
       appBar: AppBar(
-        title: const Text(
-          'الشروط والأحكام والخصوصية',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-        ),
-        backgroundColor: const Color(0xFF080D19),
-        surfaceTintColor: Colors.transparent,
+        title: const Text('الشروط والأحكام والخصوصية'),
       ),
       body: Center(
         child: ConstrainedBox(

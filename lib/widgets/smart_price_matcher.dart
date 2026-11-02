@@ -116,6 +116,7 @@ class _SmartPriceMatcherState extends State<SmartPriceMatcher> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 4),
       child: Center(
@@ -124,7 +125,6 @@ class _SmartPriceMatcherState extends State<SmartPriceMatcher> {
           child: GlassPanel(
             padding: const EdgeInsets.all(22),
             borderRadius: 20,
-            color: const Color(0xFF101A2D),
             hoverable: true,
             child: Form(
               key: _formKey,
@@ -135,9 +135,9 @@ class _SmartPriceMatcherState extends State<SmartPriceMatcher> {
                     'احصل على أقرب سعر للمشروع الذي تريده',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 18),
                   LayoutBuilder(
@@ -145,10 +145,6 @@ class _SmartPriceMatcherState extends State<SmartPriceMatcher> {
                       final isWide = constraints.maxWidth >= 680;
                       final fields = [
                         TextFormField(
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
                           controller: _keywordController,
                           textInputAction: TextInputAction.next,
                           decoration: _inputDecoration(
@@ -163,7 +159,7 @@ class _SmartPriceMatcherState extends State<SmartPriceMatcher> {
                             label: 'نوع المشروع',
                             icon: Icons.category_outlined,
                           ),
-                          dropdownColor: const Color(0xFF172338),
+                          dropdownColor: colorScheme.surfaceContainerHighest,
                           items: const [
                             DropdownMenuItem(
                               value: 'app',
@@ -183,10 +179,6 @@ class _SmartPriceMatcherState extends State<SmartPriceMatcher> {
                                 },
                         ),
                         TextFormField(
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
                           controller: _budgetController,
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
@@ -209,10 +201,6 @@ class _SmartPriceMatcherState extends State<SmartPriceMatcher> {
                           },
                         ),
                         TextFormField(
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
                           controller: _durationController,
                           keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.search,
@@ -412,23 +400,24 @@ class _SmartPriceMatcherState extends State<SmartPriceMatcher> {
     required IconData icon,
     String? hint,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return InputDecoration(
       labelText: label,
       hintText: hint,
-      prefixIcon: Icon(icon, color: const Color(0xFF60A5FA)),
+      prefixIcon: Icon(icon, color: colorScheme.primary),
       filled: true,
-      fillColor: const Color(0xFF0B1322),
+      fillColor: colorScheme.surfaceContainerHighest,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF334155)),
+        borderSide: BorderSide(color: colorScheme.outlineVariant),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF334155)),
+        borderSide: BorderSide(color: colorScheme.outlineVariant),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF60A5FA)),
+        borderSide: BorderSide(color: colorScheme.primary),
       ),
     );
   }

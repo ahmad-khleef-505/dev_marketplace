@@ -72,7 +72,68 @@ class DevMarketplaceApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
-    final textTheme = GoogleFonts.poppinsTextTheme();
+    final lightColorScheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF3B82F6),
+      brightness: Brightness.light,
+    ).copyWith(
+      primary: const Color(0xFF2563EB),
+      secondary: const Color(0xFF059669),
+      surface: const Color(0xFFF8FAFC),
+      onSurface: const Color(0xFF0F172A),
+    );
+    final darkColorScheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF3B82F6),
+      brightness: Brightness.dark,
+    ).copyWith(
+      primary: const Color(0xFF60A5FA),
+      secondary: const Color(0xFF34D399),
+      surface: const Color(0xFF0F172A),
+      onSurface: const Color(0xFFF8FAFC),
+    );
+
+    ThemeData createTheme(ColorScheme colorScheme, TextTheme baseTextTheme) {
+      return ThemeData(
+        useMaterial3: true,
+        colorScheme: colorScheme,
+        scaffoldBackgroundColor: colorScheme.surface,
+        textTheme: GoogleFonts.poppinsTextTheme(baseTextTheme).apply(
+          bodyColor: colorScheme.onSurface,
+          displayColor: colorScheme.onSurface,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: colorScheme.surface,
+          foregroundColor: colorScheme.onSurface,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: colorScheme.surfaceContainerHighest,
+          hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+          labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+          floatingLabelStyle: TextStyle(color: colorScheme.primary),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: colorScheme.outlineVariant),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: colorScheme.outlineVariant),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: colorScheme.primary, width: 2),
+          ),
+        ),
+        dividerTheme: DividerThemeData(color: colorScheme.outlineVariant),
+        textSelectionTheme: TextSelectionThemeData(
+          cursorColor: colorScheme.primary,
+          selectionColor: colorScheme.primary.withValues(alpha: 0.3),
+          selectionHandleColor: colorScheme.primary,
+        ),
+      );
+    }
+
     return MaterialApp(
       title: 'Dev Marketplace',
       debugShowCheckedModeBanner: false,
@@ -81,52 +142,8 @@ class DevMarketplaceApp extends StatelessWidget {
         textDirection: TextDirection.rtl,
         child: child ?? const SizedBox.shrink(),
       ),
-      theme: ThemeData(
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-        textTheme: GoogleFonts.poppinsTextTheme(ThemeData.light().textTheme)
-            .apply(
-              bodyColor: const Color(0xFF0F172A),
-              displayColor: const Color(0xFF0F172A),
-            ),
-        colorScheme: const ColorScheme.light(
-          primary: Color(0xFF3B82F6),
-          secondary: Color(0xFF10B981),
-          surface: Colors.white,
-        ),
-        inputDecorationTheme: const InputDecorationTheme(
-          hintStyle: TextStyle(color: Colors.white54),
-          labelStyle: TextStyle(color: Colors.white70),
-          floatingLabelStyle: TextStyle(color: Color(0xFF60A5FA)),
-        ),
-        textSelectionTheme: const TextSelectionThemeData(
-          cursorColor: Color(0xFF3B82F6),
-          selectionColor: Color(0x663B82F6),
-          selectionHandleColor: Color(0xFF3B82F6),
-        ),
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F172A),
-        textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme)
-            .merge(textTheme)
-            .apply(bodyColor: Colors.white, displayColor: Colors.white),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF3B82F6),
-          secondary: Color(0xFF10B981),
-          surface: Color(0xFF0F172A),
-        ),
-        inputDecorationTheme: const InputDecorationTheme(
-          hintStyle: TextStyle(color: Colors.white54),
-          labelStyle: TextStyle(color: Colors.white70),
-          floatingLabelStyle: TextStyle(color: Color(0xFF60A5FA)),
-        ),
-        textSelectionTheme: const TextSelectionThemeData(
-          cursorColor: Color(0xFF3B82F6),
-          selectionColor: Color(0x663B82F6),
-          selectionHandleColor: Color(0xFF3B82F6),
-        ),
-      ),
+      theme: createTheme(lightColorScheme, ThemeData.light().textTheme),
+      darkTheme: createTheme(darkColorScheme, ThemeData.dark().textTheme),
       themeMode: themeProvider.themeMode,
       home: Consumer<AuthProvider>(
         builder: (context, authProvider, _) {
@@ -252,7 +269,6 @@ class _TermsConsentGateState extends State<_TermsConsentGate> {
   Widget build(BuildContext context) {
     if (_loadError != null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF0F172A),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -262,7 +278,6 @@ class _TermsConsentGateState extends State<_TermsConsentGate> {
                 Text(
                   _loadError!,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white),
                 ),
                 const SizedBox(height: 16),
                 FilledButton(
@@ -280,7 +295,6 @@ class _TermsConsentGateState extends State<_TermsConsentGate> {
     }
     if (_hasAccepted != true) {
       return const Scaffold(
-        backgroundColor: Color(0xFF0F172A),
         body: Center(
           child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
         ),
@@ -332,19 +346,19 @@ class _TermsConsentDialogState extends State<_TermsConsentDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return PopScope(
       canPop: false,
       child: AlertDialog(
-        backgroundColor: const Color(0xFF111B2D),
-        icon: const Icon(
+        backgroundColor: colorScheme.surfaceContainerHighest,
+        icon: Icon(
           Icons.policy_outlined,
-          color: Color(0xFF60A5FA),
+          color: colorScheme.primary,
           size: 34,
         ),
         title: const Text(
           'الشروط والأحكام وسياسة الخصوصية',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -359,10 +373,10 @@ class _TermsConsentDialogState extends State<_TermsConsentDialog> {
                 onPressed: _isSaving
                     ? null
                     : () => Navigator.of(context).push<void>(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const LegalScreen(),
+                          MaterialPageRoute<void>(
+                            builder: (_) => const LegalScreen(),
+                          ),
                         ),
-                      ),
                 icon: const Icon(Icons.open_in_new_rounded),
                 label: const Text('قراءة الشروط كاملة'),
               ),

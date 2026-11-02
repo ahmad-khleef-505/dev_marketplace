@@ -26,6 +26,8 @@ dependencies:
   provider: ^6.1.5+1
   lottie: ^3.7.0
   cached_network_image: ^4.0.3
+  image_picker: ^1.2.4
+  firebase_storage: ^14.0.1
 
 dev_dependencies:
   flutter_test:

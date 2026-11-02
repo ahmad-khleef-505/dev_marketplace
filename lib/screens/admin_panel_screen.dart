@@ -8,6 +8,30 @@ import '../repositories/admin_repository.dart';
 import '../services/purchase_service.dart';
 import '../widgets/glass_panel.dart';
 
+Future<void> _openDeveloperPhone(
+  BuildContext context,
+  String phone, {
+  required bool whatsapp,
+}) async {
+  final normalizedPhone = phone.replaceAll(RegExp(r'[^0-9+]'), '');
+  if (normalizedPhone.isEmpty) return;
+
+  final uri = whatsapp
+      ? Uri.https('wa.me', '/${normalizedPhone.replaceAll('+', '')}')
+      : Uri(scheme: 'tel', path: normalizedPhone);
+  try {
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw StateError('تعذر فتح تطبيق التواصل.');
+    }
+  } catch (error) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('تعذر فتح تطبيق التواصل: $error')),
+      );
+    }
+  }
+}
+
 class AdminPanelScreen extends StatelessWidget {
   const AdminPanelScreen({super.key});
 
@@ -18,7 +42,6 @@ class AdminPanelScreen extends StatelessWidget {
       child: DefaultTabController(
         length: 6,
         child: Scaffold(
-          backgroundColor: const Color(0xFF0F172A),
           appBar: AppBar(
             title: const Row(
               children: [
@@ -30,8 +53,6 @@ class AdminPanelScreen extends StatelessWidget {
                 ),
               ],
             ),
-            backgroundColor: const Color(0xFF1E293B),
-            elevation: 0,
             actions: [
               IconButton(
                 icon: const Icon(Icons.logout, color: Color(0xFFEF4444)),
@@ -109,9 +130,8 @@ class _AdminAnalyticsTabState extends State<_AdminAnalyticsTab> {
                   OutlinedButton.icon(
                     onPressed: () {
                       setState(
-                        () => _analyticsFuture = context
-                            .read<AdminRepository>()
-                            .getAnalytics(),
+                        () => _analyticsFuture =
+                            context.read<AdminRepository>().getAnalytics(),
                       );
                     },
                     icon: const Icon(Icons.refresh_rounded),
@@ -135,8 +155,8 @@ class _AdminAnalyticsTabState extends State<_AdminAnalyticsTab> {
             final columns = constraints.maxWidth >= 1000
                 ? 4
                 : constraints.maxWidth >= 600
-                ? 2
-                : 1;
+                    ? 2
+                    : 1;
             return Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1200),
@@ -270,9 +290,9 @@ class _ProjectList extends StatelessWidget {
   ) async {
     try {
       await context.read<AdminRepository>().updateProjectStatus(
-        projectId,
-        newStatus,
-      );
+            projectId,
+            newStatus,
+          );
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -326,7 +346,7 @@ class _ProjectList extends StatelessWidget {
       await showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
@@ -356,25 +376,17 @@ class _ProjectList extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
                         controller: titleController,
                         decoration: const InputDecoration(
                           labelText: 'عنوان المشروع',
                         ),
                         validator: (value) =>
                             value == null || value.trim().isEmpty
-                            ? 'عنوان المشروع مطلوب'
-                            : null,
+                                ? 'عنوان المشروع مطلوب'
+                                : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
                         controller: descriptionController,
                         minLines: 3,
                         maxLines: 6,
@@ -384,15 +396,11 @@ class _ProjectList extends StatelessWidget {
                         ),
                         validator: (value) =>
                             value == null || value.trim().isEmpty
-                            ? 'وصف المشروع مطلوب'
-                            : null,
+                                ? 'وصف المشروع مطلوب'
+                                : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
                         controller: priceController,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
@@ -446,8 +454,8 @@ class _ProjectList extends StatelessWidget {
                                   .updateProjectDetails(
                                     id: projectId,
                                     title: titleController.text.trim(),
-                                    description: descriptionController.text
-                                        .trim(),
+                                    description:
+                                        descriptionController.text.trim(),
                                     price: double.parse(
                                       priceController.text.trim(),
                                     ),
@@ -503,20 +511,20 @@ class _ProjectList extends StatelessWidget {
     String projectId,
     Map<String, dynamic> data,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
     final user = context.read<AuthProvider>().currentUser;
     final isSuperAdminFuture = user == null
         ? Future<bool>.value(false)
         : context
-              .read<AdminRepository>()
-              .getUser(user.uid)
-              .then((userData) => userData?['userType'] == 'superAdmin');
-    final developerPhoneFuture = context
-        .read<AdminRepository>()
-        .getDeveloperPhone(projectId);
+            .read<AdminRepository>()
+            .getUser(user.uid)
+            .then((userData) => userData?['userType'] == 'superAdmin');
+    final developerPhoneFuture =
+        context.read<AdminRepository>().getDeveloperPhone(projectId);
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: colorScheme.surfaceContainerHighest,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -637,7 +645,7 @@ class _ProjectList extends StatelessWidget {
                 FutureBuilder<String?>(
                   future: developerPhoneFuture,
                   builder: (context, snapshot) {
-                    final phone = snapshot.data ?? 'غير متوفر';
+                    final phone = snapshot.data?.trim() ?? '';
                     return Row(
                       children: [
                         const Icon(
@@ -646,13 +654,25 @@ class _ProjectList extends StatelessWidget {
                           size: 20,
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          'الهاتف: $phone',
-                          style: const TextStyle(
-                            color: Color(0xFFF59E0B),
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Flexible(
+                          child: phone.isEmpty
+                              ? const Text(
+                                  'الهاتف: غير متوفر',
+                                  style: TextStyle(
+                                    color: Color(0xFFF59E0B),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : TextButton.icon(
+                                  onPressed: () => _openDeveloperPhone(
+                                    context,
+                                    phone,
+                                    whatsapp: false,
+                                  ),
+                                  icon: const Icon(Icons.call, size: 18),
+                                  label: Text('الهاتف: $phone'),
+                                ),
                         ),
                       ],
                     );
@@ -845,180 +865,180 @@ class _ProjectList extends StatelessWidget {
             final commission = price * 0.10;
 
             return GlassPanel(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(16),
-                  borderRadius: 16,
-                  hoverable: true,
-                  child: Column(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(16),
+              borderRadius: 16,
+              hoverable: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // الصف الأول: الصورة والاسم والهاتف
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // الصف الأول: الصورة والاسم والهاتف
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              data['imageUrl'] ?? '',
-                              width: 80,
-                              height: 80,
-                              fit: BoxFit.cover,
-                              errorBuilder: (c, e, s) => Container(
-                                width: 80,
-                                height: 80,
-                                color: Colors.black26,
-                                child: const Icon(
-                                  Icons.image,
-                                  color: Colors.grey,
-                                ),
-                              ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          data['imageUrl'] ?? '',
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (c, e, s) => Container(
+                            width: 80,
+                            height: 80,
+                            color: Colors.black26,
+                            child: const Icon(
+                              Icons.image,
+                              color: Colors.grey,
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  data['title'] ?? 'بدون عنوان',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'المطور: ${data['developerName'] ?? 'مجهول'}',
-                                  style: const TextStyle(
-                                    color: Color(0xFF3B82F6),
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                const Text(
-                                  'الهاتف: بيانات خاصة',
-                                  style: TextStyle(
-                                    color: Color(0xFFF59E0B),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // زر الحذف
-                          IconButton(
-                            icon: const Icon(
-                              Icons.delete,
-                              color: Color(0xFFEF4444),
-                            ),
-                            onPressed: () {
-                              _deleteProject(context, project.id);
-                            },
-                          ),
-                        ],
+                        ),
                       ),
-                      const Divider(color: Color(0xFF334155), height: 24),
-
-                      // الصف الثاني: السعر والعمولة
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'السعر: \$${price.toStringAsFixed(2)}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          Text(
-                            'العمولة: \$${commission.toStringAsFixed(2)}',
-                            style: const TextStyle(color: Color(0xFF10B981)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // زر عرض التفاصيل
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () =>
-                                  _showDetails(context, project.id, data),
-                              icon: const Icon(Icons.visibility, size: 18),
-                              label: const Text('التفاصيل'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF3B82F6),
-                                side: const BorderSide(
-                                  color: Color(0xFF3B82F6),
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () =>
-                                  _editProject(context, project.id, data),
-                              icon: const Icon(Icons.edit_outlined, size: 18),
-                              label: const Text('تعديل المشروع'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFFF59E0B),
-                                side: const BorderSide(
-                                  color: Color(0xFFF59E0B),
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      // أزرار الموافقة والرفض (تظهر فقط للمعلقة)
-                      if (status == 'pending') ...[
-                        const SizedBox(height: 12),
-                        Row(
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () => _updateProjectStatus(
-                                  context,
-                                  project.id,
-                                  'rejected',
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: const Color(0xFFEF4444),
-                                  side: const BorderSide(
-                                    color: Color(0xFFEF4444),
-                                  ),
-                                ),
-                                child: const Text('رفض'),
+                            Text(
+                              data['title'] ?? 'بدون عنوان',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () => _updateProjectStatus(
-                                  context,
-                                  project.id,
-                                  'approved',
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF10B981),
-                                ),
-                                child: const Text('قبول'),
+                            const SizedBox(height: 4),
+                            Text(
+                              'المطور: ${data['developerName'] ?? 'مجهول'}',
+                              style: const TextStyle(
+                                color: Color(0xFF3B82F6),
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              'الهاتف: بيانات خاصة',
+                              style: TextStyle(
+                                color: Color(0xFFF59E0B),
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ],
                         ),
-                      ],
+                      ),
+                      // زر الحذف
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Color(0xFFEF4444),
+                        ),
+                        onPressed: () {
+                          _deleteProject(context, project.id);
+                        },
+                      ),
                     ],
                   ),
-                )
+                  const Divider(color: Color(0xFF334155), height: 24),
+
+                  // الصف الثاني: السعر والعمولة
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'السعر: \$${price.toStringAsFixed(2)}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      Text(
+                        'العمولة: \$${commission.toStringAsFixed(2)}',
+                        style: const TextStyle(color: Color(0xFF10B981)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // زر عرض التفاصيل
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () =>
+                              _showDetails(context, project.id, data),
+                          icon: const Icon(Icons.visibility, size: 18),
+                          label: const Text('التفاصيل'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF3B82F6),
+                            side: const BorderSide(
+                              color: Color(0xFF3B82F6),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () =>
+                              _editProject(context, project.id, data),
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          label: const Text('تعديل المشروع'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFFF59E0B),
+                            side: const BorderSide(
+                              color: Color(0xFFF59E0B),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // أزرار الموافقة والرفض (تظهر فقط للمعلقة)
+                  if (status == 'pending') ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => _updateProjectStatus(
+                              context,
+                              project.id,
+                              'rejected',
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFEF4444),
+                              side: const BorderSide(
+                                color: Color(0xFFEF4444),
+                              ),
+                            ),
+                            child: const Text('رفض'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => _updateProjectStatus(
+                              context,
+                              project.id,
+                              'approved',
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF10B981),
+                            ),
+                            child: const Text('قبول'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            )
                 .animate(delay: Duration(milliseconds: index * 25))
                 .fadeIn(duration: 240.ms)
                 .slideY(begin: 0.025, end: 0);
@@ -1055,7 +1075,9 @@ class _UsersList extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: Theme.of(
+          dialogContext,
+        ).colorScheme.surfaceContainerHighest,
         title: const Text('تأكيد تغيير الرتبة'),
         content: Text('هل تريد تغيير رتبة "$userName" إلى $newUserType؟'),
         actions: [
@@ -1124,131 +1146,131 @@ class _UsersList extends StatelessWidget {
             final user = users[index];
             final data = user.data();
             final rawUserType = data['userType']?.toString();
-            final role =
-                rawUserType ??
+            final role = rawUserType ??
                 (data['role'] == 'developer' ? 'agent' : 'client');
             final isSuperAdminUser = role == 'superAdmin';
             final isDeveloper = data['role'] == 'developer' || role == 'agent';
             final userName = data['name']?.toString() ?? 'بدون اسم';
 
             return GlassPanel(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  borderRadius: 12,
-                  hoverable: true,
-                  child: Column(
-                    children: [
-                      Material(
-                        color: Colors.transparent,
-                        child: ListTile(
-                          tileColor: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          leading: CircleAvatar(
-                            backgroundColor: isDeveloper
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFF3B82F6),
-                            child: Icon(
-                              isDeveloper ? Icons.code : Icons.person,
-                              color: Colors.white,
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              borderRadius: 12,
+              hoverable: true,
+              child: Column(
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    child: ListTile(
+                      tileColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      leading: CircleAvatar(
+                        backgroundColor: isDeveloper
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFF3B82F6),
+                        child: Icon(
+                          isDeveloper ? Icons.code : Icons.person,
+                          color: Colors.white,
+                        ),
+                      ),
+                      title: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              userName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          title: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  userName,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                        ],
+                      ),
+                      subtitle: Text(
+                        data['email']?.toString() ?? 'بدون ايميل',
+                        style: const TextStyle(color: Color(0xFF94A3B8)),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      16,
+                      0,
+                      16,
+                      8,
+                    ),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'رتبة المستخدم',
+                          style: TextStyle(color: Color(0xFF94A3B8)),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButton<String>(
+                            value: const [
+                              'client',
+                              'agent',
+                              'admin',
+                            ].contains(role)
+                                ? role
+                                : null,
+                            hint: Text(
+                              role == 'superAdmin' ? 'superAdmin' : role,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            isExpanded: true,
+                            dropdownColor: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'client',
+                                child: Text('عميل (client)'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'agent',
+                                child: Text('وكيل (agent)'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'admin',
+                                child: Text('مدير (admin)'),
                               ),
                             ],
+                            onChanged: isSuperAdminUser
+                                ? null
+                                : (newUserType) {
+                                    if (newUserType != null &&
+                                        newUserType != role) {
+                                      _changeUserType(
+                                        context,
+                                        user.id,
+                                        userName,
+                                        newUserType,
+                                      );
+                                    }
+                                  },
                           ),
-                          subtitle: Text(
-                            data['email']?.toString() ?? 'بدون ايميل',
-                            style: const TextStyle(color: Color(0xFF94A3B8)),
+                        ),
+                        IconButton(
+                          tooltip: 'حذف المستخدم',
+                          icon: const Icon(
+                            Icons.delete_forever,
+                            color: Color(0xFFEF4444),
                           ),
+                          onPressed: isSuperAdminUser
+                              ? null
+                              : () => _deleteUser(context, user.id),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                          16,
-                          0,
-                          16,
-                          8,
-                        ),
-                        child: Row(
-                          children: [
-                            const Text(
-                              'رتبة المستخدم',
-                              style: TextStyle(color: Color(0xFF94A3B8)),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: DropdownButton<String>(
-                                value:
-                                    const [
-                                      'client',
-                                      'agent',
-                                      'admin',
-                                    ].contains(role)
-                                    ? role
-                                    : null,
-                                hint: Text(
-                                  role == 'superAdmin' ? 'superAdmin' : role,
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                isExpanded: true,
-                                dropdownColor: const Color(0xFF1E293B),
-                                items: const [
-                                  DropdownMenuItem(
-                                    value: 'client',
-                                    child: Text('عميل (client)'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'agent',
-                                    child: Text('وكيل (agent)'),
-                                  ),
-                                  DropdownMenuItem(
-                                    value: 'admin',
-                                    child: Text('مدير (admin)'),
-                                  ),
-                                ],
-                                onChanged: isSuperAdminUser
-                                    ? null
-                                    : (newUserType) {
-                                        if (newUserType != null &&
-                                            newUserType != role) {
-                                          _changeUserType(
-                                            context,
-                                            user.id,
-                                            userName,
-                                            newUserType,
-                                          );
-                                        }
-                                      },
-                              ),
-                            ),
-                            IconButton(
-                              tooltip: 'حذف المستخدم',
-                              icon: const Icon(
-                                Icons.delete_forever,
-                                color: Color(0xFFEF4444),
-                              ),
-                              onPressed: isSuperAdminUser
-                                  ? null
-                                  : () => _deleteUser(context, user.id),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                )
+                ],
+              ),
+            )
                 .animate(delay: Duration(milliseconds: index * 20))
                 .fadeIn(duration: 220.ms)
                 .slideY(begin: 0.02, end: 0);
@@ -1274,7 +1296,7 @@ class _PurchaseOrdersTabState extends State<_PurchaseOrdersTab> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         title: const Text('تأكيد قبول الطلب'),
         content: const Text(
           'هل تحققت يدويًا من صورة إشعار واتساب ومن استلام المبلغ في شام كاش؟ لا توافق قبل التحقق من الأمرين.',
@@ -1300,10 +1322,9 @@ class _PurchaseOrdersTabState extends State<_PurchaseOrdersTab> {
     final reason = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         title: const Text('رفض طلب الشراء'),
         content: TextField(
-          style: const TextStyle(color: Colors.white, fontSize: 16),
           controller: controller,
           autofocus: true,
           maxLines: 3,
@@ -1350,8 +1371,8 @@ class _PurchaseOrdersTabState extends State<_PurchaseOrdersTab> {
             content: Text(
               decision == 'approve'
                   ? contactAvailable
-                        ? 'تم قبول الطلب بعد المراجعة.'
-                        : 'تم قبول الطلب، لكن رقم المطوّر غير متوفر حالياً.'
+                      ? 'تم قبول الطلب بعد المراجعة.'
+                      : 'تم قبول الطلب، لكن رقم المطوّر غير متوفر حالياً.'
                   : 'تم رفض الطلب وتسجيل السبب.',
             ),
           ),
@@ -1410,113 +1431,146 @@ class _PurchaseOrdersTabState extends State<_PurchaseOrdersTab> {
             final projectId = data['projectId']?.toString() ?? '';
             final isProcessing = _processingOrderId == order.id;
             return GlassPanel(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(16),
-                  hoverable: true,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        data['projectTitle']?.toString() ?? 'مشروع',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'المبلغ: ${amount.toStringAsFixed(2)} ${data['currency'] ?? ''}',
-                        style: const TextStyle(
-                          color: Color(0xFF10B981),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        'العميل: ${data['clientName'] ?? data['clientUid'] ?? 'غير معروف'}',
-                        style: const TextStyle(color: Color(0xFFCBD5E1)),
-                      ),
-                      if (clientUid.isNotEmpty)
-                        FutureBuilder<Map<String, dynamic>?>(
-                          future: context.read<AdminRepository>().getUser(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              hoverable: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    data['projectTitle']?.toString() ?? 'مشروع',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'المبلغ: ${amount.toStringAsFixed(2)} ${data['currency'] ?? ''}',
+                    style: const TextStyle(
+                      color: Color(0xFF10B981),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'العميل: ${data['clientName'] ?? data['clientUid'] ?? 'غير معروف'}',
+                    style: const TextStyle(color: Color(0xFFCBD5E1)),
+                  ),
+                  if (clientUid.isNotEmpty)
+                    FutureBuilder<Map<String, dynamic>?>(
+                      future: context.read<AdminRepository>().getUser(
                             clientUid,
                           ),
-                          builder: (context, snapshot) {
-                            final phone = snapshot.data?['phone']?.toString();
-                            return Text(
-                              'هاتف العميل: ${phone?.isNotEmpty == true ? phone : 'غير متوفر'}',
-                              style: const TextStyle(color: Color(0xFFCBD5E1)),
-                            );
-                          },
-                        ),
-                      if (projectId.isNotEmpty)
-                        FutureBuilder<String?>(
-                          future: context
-                              .read<AdminRepository>()
-                              .getDeveloperPhone(projectId),
-                          builder: (context, snapshot) {
-                            final phone = snapshot.data;
-                            return Text(
-                              'هاتف المطوّر: ${phone?.isNotEmpty == true ? phone : 'غير متوفر'}',
-                              style: const TextStyle(color: Color(0xFFCBD5E1)),
-                            );
-                          },
-                        ),
-                      Text(
-                        'معرّف الطلب: ${order.id}',
-                        style: const TextStyle(
-                          color: Color(0xFF94A3B8),
-                          fontSize: 12,
-                        ),
-                      ),
-                      if (data['transferNoticeSubmittedAt'] is Timestamp)
-                        Text(
-                          'وصل الإشعار: ${(data['transferNoticeSubmittedAt'] as Timestamp).toDate().toLocal()}',
-                          style: const TextStyle(
-                            color: Color(0xFF94A3B8),
-                            fontSize: 12,
-                          ),
-                        ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'تحقق من إشعار واتساب واستلام المبلغ يدويًا قبل القبول.',
-                        style: TextStyle(color: Color(0xFFFBBF24), height: 1.4),
-                      ),
-                      const SizedBox(height: 12),
-                      if (isProcessing)
-                        const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF3B82F6),
-                          ),
-                        )
-                      else
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          alignment: WrapAlignment.start,
-                          children: [
-                            ElevatedButton.icon(
-                              onPressed: () => _approveOrder(order.id),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF10B981),
-                                foregroundColor: Colors.white,
-                              ),
-                              icon: const Icon(Icons.check),
-                              label: const Text('قبول بعد التحقق'),
+                      builder: (context, snapshot) {
+                        final phone = snapshot.data?['phone']?.toString();
+                        return Text(
+                          'هاتف العميل: ${phone?.isNotEmpty == true ? phone : 'غير متوفر'}',
+                          style: const TextStyle(color: Color(0xFFCBD5E1)),
+                        );
+                      },
+                    ),
+                  if (projectId.isNotEmpty)
+                    FutureBuilder<String?>(
+                      future: context
+                          .read<AdminRepository>()
+                          .getDeveloperPhone(projectId),
+                      builder: (context, snapshot) {
+                        final phone = snapshot.data?.trim() ?? '';
+                        if (phone.isEmpty) {
+                          return const Text(
+                            'هاتف المطوّر: غير متوفر',
+                            style: TextStyle(
+                              color: Color(0xFFCBD5E1),
                             ),
-                            OutlinedButton.icon(
-                              onPressed: () => _rejectOrder(order.id),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFFEF4444),
+                          );
+                        }
+                        return Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              'هاتف المطوّر: $phone',
+                              style: const TextStyle(
+                                color: Color(0xFFCBD5E1),
                               ),
-                              icon: const Icon(Icons.close),
-                              label: const Text('رفض وذكر السبب'),
+                            ),
+                            IconButton(
+                              tooltip: 'اتصال بالمطوّر',
+                              onPressed: () => _openDeveloperPhone(
+                                context,
+                                phone,
+                                whatsapp: false,
+                              ),
+                              icon: const Icon(Icons.call),
+                            ),
+                            IconButton(
+                              tooltip: 'واتساب المطوّر',
+                              onPressed: () => _openDeveloperPhone(
+                                context,
+                                phone,
+                                whatsapp: true,
+                              ),
+                              icon: const Icon(Icons.chat),
                             ),
                           ],
-                        ),
-                    ],
+                        );
+                      },
+                    ),
+                  Text(
+                    'معرّف الطلب: ${order.id}',
+                    style: const TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 12,
+                    ),
                   ),
-                )
+                  if (data['transferNoticeSubmittedAt'] is Timestamp)
+                    Text(
+                      'وصل الإشعار: ${(data['transferNoticeSubmittedAt'] as Timestamp).toDate().toLocal()}',
+                      style: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 12,
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'تحقق من إشعار واتساب واستلام المبلغ يدويًا قبل القبول.',
+                    style: TextStyle(color: Color(0xFFFBBF24), height: 1.4),
+                  ),
+                  const SizedBox(height: 12),
+                  if (isProcessing)
+                    const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF3B82F6),
+                      ),
+                    )
+                  else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      alignment: WrapAlignment.start,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () => _approveOrder(order.id),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                            foregroundColor: Colors.white,
+                          ),
+                          icon: const Icon(Icons.check),
+                          label: const Text('قبول بعد التحقق'),
+                        ),
+                        OutlinedButton.icon(
+                          onPressed: () => _rejectOrder(order.id),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFFEF4444),
+                          ),
+                          icon: const Icon(Icons.close),
+                          label: const Text('رفض وذكر السبب'),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            )
                 .animate(delay: Duration(milliseconds: index * 25))
                 .fadeIn(duration: 220.ms)
                 .slideY(begin: 0.02, end: 0);

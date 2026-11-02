@@ -11,6 +11,7 @@ import '../widgets/shimmer_card.dart';
 import '../widgets/glass_panel.dart';
 import '../widgets/smart_price_matcher.dart';
 import '../widgets/EmptyStateWidget.dart';
+import '../widgets/app_footer.dart';
 import '../services/purchase_service.dart';
 
 class MarketplaceScreen extends StatefulWidget {
@@ -173,16 +174,15 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     if (cursor == null) return;
     setState(() => _loadingProjectPages.add(category));
     try {
-      final page = await context
-          .read<ProjectRepository>()
-          .getNextApprovedProjects(
-            category: category,
-            minimumPrice: _currentPriceRange.start,
-            maximumPrice: _currentPriceRange.end,
-            technologies: Set<String>.from(_selectedTechnologies),
-            limit: _pageSize,
-            cursor: cursor,
-          );
+      final page =
+          await context.read<ProjectRepository>().getNextApprovedProjects(
+                category: category,
+                minimumPrice: _currentPriceRange.start,
+                maximumPrice: _currentPriceRange.end,
+                technologies: Set<String>.from(_selectedTechnologies),
+                limit: _pageSize,
+                cursor: cursor,
+              );
       if (!mounted) return;
       setState(() {
         final existingIds = loadedPages.map((project) => project.id).toSet();
@@ -231,6 +231,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
         var draftPriceRange = _currentPriceRange;
         final draftTechnologies = Set<String>.from(_selectedTechnologies);
         return StatefulBuilder(
@@ -247,7 +248,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   child: GlassPanel(
                     padding: const EdgeInsets.all(24),
                     borderRadius: 24,
-                    color: const Color(0xFF101A2D),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,16 +354,12 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                         const SizedBox(height: 12),
                         TextField(
                           controller: _languageController,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
                           decoration: InputDecoration(
                             labelText: 'لغة البرمجة (اختياري)',
                             hintText: 'مثال: Dart',
                             prefixIcon: const Icon(Icons.code),
                             filled: true,
-                            fillColor: const Color(0xFF0F172A),
+                            fillColor: colorScheme.surfaceContainerHighest,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -406,8 +402,8 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                                     _languageFilter = _languageController.text
                                         .trim()
                                         .toLowerCase();
-                                    _isFilterActive =
-                                        draftPriceRange.start > 0 ||
+                                    _isFilterActive = draftPriceRange.start >
+                                            0 ||
                                         draftPriceRange.end < _maxFilterPrice ||
                                         draftTechnologies.isNotEmpty ||
                                         _languageFilter.isNotEmpty;
@@ -447,12 +443,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF080D19),
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
         titleSpacing: 16,
         title: Row(
           children: [
@@ -484,22 +477,22 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                           _searchQuery = value.toLowerCase();
                         });
                       },
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: colorScheme.onSurface),
                       decoration: InputDecoration(
                         hintText: 'ابحث عن تطبيق، موقع، أو تقنية...',
                         hintStyle: GoogleFonts.cairo(
-                          color: const Color(0xFF64748B),
+                          color: colorScheme.onSurfaceVariant,
                           fontSize: 13,
                         ),
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.search_rounded,
-                          color: Color(0xFF60A5FA),
+                          color: colorScheme.primary,
                         ),
                         suffixIcon: _searchQuery.isNotEmpty
                             ? IconButton(
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.clear_rounded,
-                                  color: Color(0xFF94A3B8),
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                                 onPressed: () {
                                   _searchController.clear();
@@ -508,9 +501,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                               )
                             : null,
                         filled: true,
-                        fillColor: _isSearchFocused
-                            ? const Color(0xFF111D31)
-                            : const Color(0xFF0D1728),
+                        fillColor: colorScheme.surfaceContainerHighest,
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 14,
                         ),
@@ -518,16 +509,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide(
                             color: _isSearchFocused
-                                ? const Color(
-                                    0xFF3B82F6,
-                                  ).withValues(alpha: 0.55)
-                                : const Color(0xFF26364F),
+                                ? colorScheme.primary.withValues(alpha: 0.55)
+                                : colorScheme.outlineVariant,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF60A5FA),
+                          borderSide: BorderSide(
+                            color: colorScheme.primary,
                             width: 1.2,
                           ),
                         ),
@@ -566,6 +555,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                 _buildSection('المواقع المميزة', 'موقع ويب', Icons.web),
                 _buildCustomProjectRequest(),
                 const SizedBox(height: 32),
+                const AppFooter(),
               ],
             ),
           ),
@@ -575,6 +565,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   }
 
   Widget _buildCustomProjectRequest() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
       child: Center(
@@ -589,34 +580,35 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Icon(
                         Icons.lightbulb_outline,
-                        color: Color(0xFF60A5FA),
+                        color: colorScheme.primary,
                         size: 26,
                       ),
                       SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           'لم تجد ما تبحث عنه؟ اطلب مشروعك الآن',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'أخبرنا بما تحتاجه وسنساعدك في الوصول إلى المشروع المناسب.',
-                    style: TextStyle(color: Color(0xFF94A3B8), height: 1.5),
+                    style: TextStyle(
+                      color: colorScheme.onSurfaceVariant,
+                      height: 1.5,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
                     controller: _requestDescriptionController,
                     minLines: 4,
                     maxLines: 7,
@@ -627,7 +619,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                       hintText: 'اشرح فكرة المشروع والميزات التي تحتاجها...',
                       alignLabelWithHint: true,
                       filled: true,
-                      fillColor: const Color(0xFF0F172A),
+                      fillColor: colorScheme.surfaceContainerHighest,
                       prefixIcon: const Padding(
                         padding: EdgeInsets.only(bottom: 64),
                         child: Icon(Icons.description_outlined),
@@ -644,17 +636,13 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final deadlineField = TextFormField(
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
                         controller: _requestDeadlineController,
                         textInputAction: TextInputAction.next,
                         decoration: InputDecoration(
                           labelText: 'المدة الزمنية للتنفيذ',
                           hintText: 'مثال: شهر واحد',
                           filled: true,
-                          fillColor: const Color(0xFF0F172A),
+                          fillColor: colorScheme.surfaceContainerHighest,
                           prefixIcon: const Icon(Icons.schedule_outlined),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -662,14 +650,10 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                         ),
                         validator: (value) =>
                             value == null || value.trim().isEmpty
-                            ? 'المدة الزمنية مطلوبة.'
-                            : null,
+                                ? 'المدة الزمنية مطلوبة.'
+                                : null,
                       );
                       final budgetField = TextFormField(
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
                         controller: _requestBudgetController,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
@@ -679,7 +663,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                           labelText: 'الميزانية المتوقعة',
                           prefixText: '\$ ',
                           filled: true,
-                          fillColor: const Color(0xFF0F172A),
+                          fillColor: colorScheme.surfaceContainerHighest,
                           prefixIcon: const Icon(Icons.payments_outlined),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -802,15 +786,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             ),
           ).animate().fadeIn(duration: 300.ms).slideX(begin: 0.025, end: 0),
         ),
-
         StreamBuilder<ProjectPage>(
           stream: context.read<ProjectRepository>().getApprovedProjects(
-            category: category,
-            minimumPrice: _currentPriceRange.start,
-            maximumPrice: _currentPriceRange.end,
-            technologies: Set<String>.from(_selectedTechnologies),
-            limit: _pageSize,
-          ),
+                category: category,
+                minimumPrice: _currentPriceRange.start,
+                maximumPrice: _currentPriceRange.end,
+                technologies: Set<String>.from(_selectedTechnologies),
+                limit: _pageSize,
+              ),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Padding(
@@ -828,8 +811,8 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   final columns = constraints.maxWidth >= 1100
                       ? 4
                       : constraints.maxWidth >= 700
-                      ? 3
-                      : 2;
+                          ? 3
+                          : 2;
                   return GridView.builder(
                     reverse: true,
                     shrinkWrap: true,
@@ -867,15 +850,12 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               final pLanguage = project.language.toLowerCase();
               final pPrice = project.price;
 
-              bool matchesSearch =
-                  pTitle.contains(_searchQuery) ||
+              bool matchesSearch = pTitle.contains(_searchQuery) ||
                   pDesc.contains(_searchQuery) ||
                   pTech.contains(_searchQuery);
-              final matchesPrice =
-                  pPrice >= _currentPriceRange.start &&
+              final matchesPrice = pPrice >= _currentPriceRange.start &&
                   pPrice <= _currentPriceRange.end;
-              final matchesLanguage =
-                  _languageFilter.isEmpty ||
+              final matchesLanguage = _languageFilter.isEmpty ||
                   pLanguage.contains(_languageFilter) ||
                   pTech.contains(_languageFilter);
 
@@ -911,27 +891,28 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
               builder: (context, constraints) {
                 final isDesktopWeb = kIsWeb && constraints.maxWidth >= 700;
                 final columns = (constraints.maxWidth / 310).floor().clamp(
-                  2,
-                  5,
-                );
-                Widget projectCard(int index) {
+                      2,
+                      5,
+                    );
+                Widget projectCard(int index, {bool horizontal = false}) {
                   final project = projects[index];
                   return ProjectCard(
-                        projectId: project.id,
-                        developerUid: project.developerId,
-                        projectType: project.projectType,
-                        title: project.title,
-                        developerName: project.developerName,
-                        price: project.price,
-                        techStack: project.techStack,
-                        rating: project.averageRating,
-                        ratingCount: project.ratingCount,
-                        views: project.views,
-                        imageUrl: project.imageUrl,
-                        isEscrow: project.isEscrow,
-                        description: project.description,
-                        demoLink: project.demoLink,
-                      )
+                    projectId: project.id,
+                    developerUid: project.developerId,
+                    projectType: project.projectType,
+                    title: project.title,
+                    developerName: project.developerName,
+                    price: project.price,
+                    techStack: project.techStack,
+                    rating: project.averageRating,
+                    ratingCount: project.ratingCount,
+                    views: project.views,
+                    imageUrl: project.imageUrl,
+                    isEscrow: project.isEscrow,
+                    description: project.description,
+                    demoLink: project.demoLink,
+                    horizontal: horizontal,
+                  )
                       .animate()
                       .fadeIn(
                         duration: 250.ms,
@@ -958,16 +939,16 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                                 itemCount: column >= projects.length
                                     ? 0
                                     : (projects.length -
-                                              column +
-                                              columns -
-                                              1) ~/
-                                          columns,
+                                            column +
+                                            columns -
+                                            1) ~/
+                                        columns,
                                 gridDelegate:
                                     const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 1,
-                                      mainAxisSpacing: 18,
-                                      mainAxisExtent: 430,
-                                    ),
+                                  crossAxisCount: 1,
+                                  mainAxisSpacing: 18,
+                                  mainAxisExtent: 430,
+                                ),
                                 itemBuilder: (context, itemIndex) {
                                   final index = column + itemIndex * columns;
                                   return projectCard(index);
@@ -977,16 +958,19 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                           ),
                         ),
                       )
-                    : ListView.separated(
-                        reverse: true,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: projects.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(height: 16),
-                        itemBuilder: (context, index) =>
-                            SizedBox(height: 420, child: projectCard(index)),
+                    : SizedBox(
+                        height: 184,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: projects.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(width: 12),
+                          itemBuilder: (context, index) => SizedBox(
+                            width: 320,
+                            child: projectCard(index, horizontal: true),
+                          ),
+                        ),
                       );
                 return Column(
                   mainAxisSize: MainAxisSize.min,

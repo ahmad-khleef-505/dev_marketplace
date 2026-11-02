@@ -6,6 +6,7 @@ import '../models/favorite_project.dart';
 import '../providers/auth_provider.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/EmptyStateWidget.dart';
+import '../widgets/app_footer.dart';
 import '../widgets/project_card.dart';
 
 class FavoritesScreen extends StatelessWidget {
@@ -15,28 +16,26 @@ class FavoritesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final auth = context.watch<AuthProvider>();
     final favoritesProvider = context.watch<FavoritesProvider>();
     if (auth.isLoading || favoritesProvider.isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF080D19),
+      return Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
     if (auth.currentUser == null) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF080D19),
+      return Scaffold(
         body: Center(
           child: Text(
             'سجّل الدخول لعرض مشاريعك المفضلة.',
-            style: TextStyle(color: Color(0xFFCBD5E1)),
+            style: TextStyle(color: colorScheme.onSurfaceVariant),
           ),
         ),
       );
     }
     if (favoritesProvider.error != null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF080D19),
         body: Center(
           child: Text(
             'تعذر تحميل المفضلة: ${favoritesProvider.error}',
@@ -49,59 +48,67 @@ class FavoritesScreen extends StatelessWidget {
     final favorites = favoritesProvider.favorites;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080D19),
       appBar: AppBar(
-        title: const Text(
-          'المفضلة',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text('المفضلة'),
         centerTitle: true,
-        backgroundColor: const Color(0xFF080D19),
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
       ),
       body: favorites.isEmpty
-          ? EmptyStateWidget(
-              lottiePath:
-                  'https://assets9.lottiefiles.com/packages/lf20_0yfsb3a1.json',
-              title: 'لا توجد مشاريع في المفضلة',
-              subtitle: 'أضف المشاريع التي أعجبتك لتجدها هنا لاحقاً.',
-              actionLabel: 'تصفح المشاريع الآن',
-              onActionPressed: onBrowseProjects,
+          ? ListView(
+              children: [
+                SizedBox(
+                  height: MediaQuery.sizeOf(context).height * 0.55,
+                  child: EmptyStateWidget(
+                    lottiePath:
+                        'https://assets9.lottiefiles.com/packages/lf20_0yfsb3a1.json',
+                    title: 'لا توجد مشاريع في المفضلة',
+                    subtitle: 'أضف المشاريع التي أعجبتك لتجدها هنا لاحقاً.',
+                    actionLabel: 'تصفح المشاريع الآن',
+                    onActionPressed: onBrowseProjects,
+                  ),
+                ),
+                const AppFooter(),
+              ],
             )
           : LayoutBuilder(
               builder: (context, constraints) {
                 final isWide = kIsWeb && constraints.maxWidth >= 760;
                 if (!isWide) {
                   return ListView.separated(
-                    reverse: true,
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                    itemCount: favorites.length,
+                    itemCount: favorites.length + 1,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 16),
-                    itemBuilder: (context, index) => SizedBox(
-                      height: 420,
-                      child: _favoriteCard(favorites[index]),
-                    ),
+                    itemBuilder: (context, index) => index == favorites.length
+                        ? const AppFooter()
+                        : SizedBox(
+                            height: 420,
+                            child: _favoriteCard(favorites[index]),
+                          ),
                   );
                 }
 
                 final columns = (constraints.maxWidth / 330).floor().clamp(
-                  2,
-                  5,
-                );
-                return GridView.builder(
-                  reverse: true,
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
-                  itemCount: favorites.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: columns,
-                    crossAxisSpacing: 18,
-                    mainAxisSpacing: 18,
-                    mainAxisExtent: 430,
-                  ),
-                  itemBuilder: (context, index) =>
-                      _favoriteCard(favorites[index]),
+                      2,
+                      5,
+                    );
+                return ListView(
+                  children: [
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
+                      itemCount: favorites.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: columns,
+                        crossAxisSpacing: 18,
+                        mainAxisSpacing: 18,
+                        mainAxisExtent: 430,
+                      ),
+                      itemBuilder: (context, index) =>
+                          _favoriteCard(favorites[index]),
+                    ),
+                    const AppFooter(),
+                  ],
                 );
               },
             ),

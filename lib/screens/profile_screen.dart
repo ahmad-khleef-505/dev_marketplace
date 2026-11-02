@@ -11,6 +11,7 @@ import '../providers/user_provider.dart';
 import '../models/purchase_order.dart';
 import '../repositories/purchase_order_repository.dart';
 import '../widgets/glass_panel.dart';
+import '../widgets/app_footer.dart';
 import '../providers/theme_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -47,23 +48,20 @@ class ProfileScreen extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF1E293B),
+        backgroundColor: Theme.of(dialogContext).colorScheme.surfaceContainer,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'تعديل كلمة المرور',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: const Text('تعديل كلمة المرور'),
         content: Form(
           key: formKey,
           child: TextFormField(
             controller: passwordController,
             obscureText: true,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
             decoration: InputDecoration(
               labelText: 'كلمة المرور الجديدة',
-              labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
               filled: true,
-              fillColor: const Color(0xFF0F172A),
+              fillColor: Theme.of(
+                dialogContext,
+              ).colorScheme.surfaceContainerHighest,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -85,7 +83,6 @@ class ProfileScreen extends StatelessWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: const Text(
               'إلغاء',
-              style: TextStyle(color: Color(0xFF94A3B8)),
             ),
           ),
           ElevatedButton(
@@ -93,8 +90,8 @@ class ProfileScreen extends StatelessWidget {
               if (!formKey.currentState!.validate()) return;
               try {
                 await context.read<AuthProvider>().updatePassword(
-                  passwordController.text.trim(),
-                );
+                      passwordController.text.trim(),
+                    );
                 if (dialogContext.mounted) {
                   Navigator.pop(dialogContext);
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -305,17 +302,12 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().currentUser;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        title: const Text(
-          'الملف الشخصي',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text('الملف الشخصي'),
         centerTitle: true,
-        backgroundColor: const Color(0xFF1E293B),
-        elevation: 0,
       ),
       body: Column(
         children: [
@@ -327,10 +319,8 @@ class ProfileScreen extends StatelessWidget {
                       style: TextStyle(color: Color(0xFF94A3B8)),
                     ),
                   )
-                : Selector<
-                    UserProvider,
-                    (bool, Object?, Map<String, dynamic>?)
-                  >(
+                : Selector<UserProvider,
+                    (bool, Object?, Map<String, dynamic>?)>(
                     selector: (context, userProvider) => (
                       userProvider.isLoading,
                       userProvider.error,
@@ -366,8 +356,22 @@ class ProfileScreen extends StatelessWidget {
                         );
                       }
 
-                      final name = userData['name']?.toString() ?? 'بدون اسم';
                       final email = user.email ?? 'غير مسجل';
+                      final firestoreName =
+                          userData['name']?.toString().trim().isNotEmpty == true
+                              ? userData['name'].toString().trim()
+                              : userData['displayName']?.toString().trim();
+                      final name = (firestoreName?.isNotEmpty == true
+                              ? firestoreName
+                              : null) ??
+                          (email != 'غير مسجل' ? email : 'بدون اسم');
+                      final photoUrl = (userData['photoUrl'] ??
+                                  userData['photoURL'] ??
+                                  userData['avatarUrl'] ??
+                                  user.photoURL)
+                              ?.toString()
+                              .trim() ??
+                          '';
                       final phone = userData['phone']?.toString() ?? 'غير مسجل';
 
                       return Center(
@@ -387,18 +391,38 @@ class ProfileScreen extends StatelessWidget {
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                          color: const Color(0xFF3B82F6),
+                                          color: colorScheme.primary,
                                           width: 2,
                                         ),
                                       ),
-                                      child: const CircleAvatar(
+                                      child: CircleAvatar(
                                         radius: 32,
-                                        backgroundColor: Color(0xFF0F172A),
-                                        child: Icon(
-                                          Icons.person_outline,
-                                          size: 34,
-                                          color: Color(0xFF93C5FD),
-                                        ),
+                                        backgroundColor:
+                                            colorScheme.surfaceContainerHighest,
+                                        child: photoUrl.isEmpty
+                                            ? Icon(
+                                                Icons.person_outline,
+                                                size: 34,
+                                                color: colorScheme.primary,
+                                              )
+                                            : ClipOval(
+                                                child: Image.network(
+                                                  photoUrl,
+                                                  width: 64,
+                                                  height: 64,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (
+                                                    context,
+                                                    error,
+                                                    stackTrace,
+                                                  ) =>
+                                                      Icon(
+                                                    Icons.person_outline,
+                                                    size: 34,
+                                                    color: colorScheme.primary,
+                                                  ),
+                                                ),
+                                              ),
                                       ),
                                     ),
                                     const SizedBox(width: 16),
@@ -409,11 +433,12 @@ class ProfileScreen extends StatelessWidget {
                                         children: [
                                           Text(
                                             name,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleLarge
+                                                ?.copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                           ),
                                           const SizedBox(height: 10),
                                           _infoLine(
@@ -432,15 +457,13 @@ class ProfileScreen extends StatelessWidget {
                                               vertical: 6,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: const Color(
-                                                0xFF3B82F6,
-                                              ).withValues(alpha: 0.12),
+                                              color: colorScheme.primary
+                                                  .withValues(alpha: 0.12),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                               border: Border.all(
-                                                color: const Color(
-                                                  0xFF3B82F6,
-                                                ).withValues(alpha: 0.35),
+                                                color: colorScheme.primary
+                                                    .withValues(alpha: 0.35),
                                               ),
                                             ),
                                             child: Text(
@@ -464,61 +487,60 @@ class ProfileScreen extends StatelessWidget {
                                 child: Column(
                                   children: [
                                     Consumer<ThemeProvider>(
-                                      builder:
-                                          (
-                                            context,
-                                            themeProvider,
-                                            child,
-                                          ) => SwitchListTile.adaptive(
-                                            contentPadding: EdgeInsets.zero,
-                                            secondary: Icon(
-                                              themeProvider.isDarkMode
-                                                  ? Icons.dark_mode_rounded
-                                                  : Icons.light_mode_rounded,
-                                              color: const Color(0xFF60A5FA),
-                                            ),
-                                            title: const Text(
-                                              'الوضع الليلي',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                            subtitle: Text(
-                                              themeProvider.isDarkMode
-                                                  ? 'المظهر الداكن مفعّل'
-                                                  : 'المظهر الفاتح مفعّل',
-                                              style: const TextStyle(
-                                                color: Color(0xFF94A3B8),
-                                              ),
-                                            ),
-                                            value: themeProvider.isDarkMode,
-                                            activeThumbColor: const Color(
-                                              0xFF60A5FA,
-                                            ),
-                                            onChanged: (enabled) async {
-                                              try {
-                                                await themeProvider
-                                                    .setThemeMode(
-                                                      enabled
-                                                          ? ThemeMode.dark
-                                                          : ThemeMode.light,
-                                                    );
-                                              } catch (error) {
-                                                if (context.mounted) {
-                                                  ScaffoldMessenger.of(
-                                                    context,
-                                                  ).showSnackBar(
-                                                    SnackBar(
-                                                      content: Text(
-                                                        'تعذر حفظ إعداد المظهر: $error',
-                                                      ),
-                                                    ),
-                                                  );
-                                                }
-                                              }
-                                            },
+                                      builder: (
+                                        context,
+                                        themeProvider,
+                                        child,
+                                      ) =>
+                                          SwitchListTile.adaptive(
+                                        contentPadding: EdgeInsets.zero,
+                                        secondary: Icon(
+                                          themeProvider.isDarkMode
+                                              ? Icons.dark_mode_rounded
+                                              : Icons.light_mode_rounded,
+                                          color: const Color(0xFF60A5FA),
+                                        ),
+                                        title: const Text(
+                                          'الوضع الليلي',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
                                           ),
+                                        ),
+                                        subtitle: Text(
+                                          themeProvider.isDarkMode
+                                              ? 'المظهر الداكن مفعّل'
+                                              : 'المظهر الفاتح مفعّل',
+                                          style: const TextStyle(
+                                            color: Color(0xFF94A3B8),
+                                          ),
+                                        ),
+                                        value: themeProvider.isDarkMode,
+                                        activeThumbColor: const Color(
+                                          0xFF60A5FA,
+                                        ),
+                                        onChanged: (enabled) async {
+                                          try {
+                                            await themeProvider.setThemeMode(
+                                              enabled
+                                                  ? ThemeMode.dark
+                                                  : ThemeMode.light,
+                                            );
+                                          } catch (error) {
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'تعذر حفظ إعداد المظهر: $error',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        },
+                                      ),
                                     ),
                                     const Divider(
                                       height: 16,
@@ -560,9 +582,9 @@ class ProfileScreen extends StatelessWidget {
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               OnboardingScreen(
-                                                onCompleted: () =>
-                                                    Navigator.of(context).pop(),
-                                              ),
+                                            onCompleted: () =>
+                                                Navigator.of(context).pop(),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -576,6 +598,7 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               if (userData['userType'] == 'superAdmin')
                                 _buildAdminPanelButton(context),
+                              const AppFooter(),
                             ],
                           ),
                         ),
@@ -718,7 +741,7 @@ class ProfileScreen extends StatelessWidget {
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         leading: Icon(icon, color: const Color(0xFF60A5FA)),
-        title: Text(title, style: const TextStyle(color: Colors.white)),
+        title: Text(title),
         subtitle: Text(
           subtitle,
           style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),

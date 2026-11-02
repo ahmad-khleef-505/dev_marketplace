@@ -88,17 +88,17 @@ class _AuthScreenState extends State<AuthScreen> {
     try {
       if (_isLogin) {
         await context.read<AuthProvider>().signIn(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        );
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+            );
       } else {
         await context.read<AuthProvider>().register(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-          name: _nameController.text.trim(),
-          role: _selectedRole,
-          phone: '$_selectedCountryCode${_phoneController.text.trim()}',
-        );
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+              name: _nameController.text.trim(),
+              role: _selectedRole,
+              phone: '$_selectedCountryCode${_phoneController.text.trim()}',
+            );
       }
     } on FirebaseAuthException catch (e) {
       String message = _isArabic ? 'حدث خطأ ما' : 'An error occurred';
@@ -109,9 +109,8 @@ class _AuthScreenState extends State<AuthScreen> {
         message = _isArabic ? 'كلمة المرور غير صحيحة' : 'Wrong password.';
       }
       if (e.code == 'email-already-in-use') {
-        message = _isArabic
-            ? 'هذا البريد مسجل مسبقاً'
-            : 'Email already in use.';
+        message =
+            _isArabic ? 'هذا البريد مسجل مسبقاً' : 'Email already in use.';
       }
       if (e.code == 'weak-password') {
         message = _isArabic ? 'كلمة المرور ضعيفة جداً' : 'Password too weak.';
@@ -179,11 +178,11 @@ class _AuthScreenState extends State<AuthScreen> {
             content: Text(
               error.code == 'invalid-email'
                   ? (_isArabic
-                        ? 'البريد الإلكتروني غير صالح.'
-                        : 'Invalid email address.')
+                      ? 'البريد الإلكتروني غير صالح.'
+                      : 'Invalid email address.')
                   : (_isArabic
-                        ? 'تعذر إرسال رسالة الاستعادة.'
-                        : 'Could not send reset email.'),
+                      ? 'تعذر إرسال رسالة الاستعادة.'
+                      : 'Could not send reset email.'),
             ),
             backgroundColor: const Color(0xFFEF4444),
           ),
@@ -306,11 +305,11 @@ class _AuthScreenState extends State<AuthScreen> {
                           Text(
                             _isLogin
                                 ? (_isArabic
-                                      ? 'مرحباً بعودتك! يرجى إدخال بياناتك.'
-                                      : 'Welcome back! Please enter your details.')
+                                    ? 'مرحباً بعودتك! يرجى إدخال بياناتك.'
+                                    : 'Welcome back! Please enter your details.')
                                 : (_isArabic
-                                      ? 'أنشئ حساباً للبدء.'
-                                      : 'Create an account to get started.'),
+                                    ? 'أنشئ حساباً للبدء.'
+                                    : 'Create an account to get started.'),
                             style: const TextStyle(
                               color: Color(0xFF94A3B8),
                               fontSize: 14,
@@ -322,22 +321,16 @@ class _AuthScreenState extends State<AuthScreen> {
                           // حقل الاسم (يظهر فقط عند إنشاء حساب)
                           if (!_isLogin) ...[
                             TextFormField(
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
                               controller: _nameController,
                               textCapitalization: TextCapitalization.words,
                               decoration: InputDecoration(
-                                labelText: _isArabic
-                                    ? 'الاسم الكامل'
-                                    : 'Full Name',
+                                labelText:
+                                    _isArabic ? 'الاسم الكامل' : 'Full Name',
                                 prefixIcon: const Icon(
                                   Icons.person_outline,
                                   color: Color(0xFF94A3B8),
                                 ),
                                 filled: true,
-                                fillColor: const Color(0xFF0F172A),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide.none,
@@ -352,32 +345,26 @@ class _AuthScreenState extends State<AuthScreen> {
                               ),
                               validator: (value) =>
                                   value == null || value.trim().isEmpty
-                                  ? (_isArabic
-                                        ? 'الاسم الكامل مطلوب.'
-                                        : 'Full name is required.')
-                                  : null,
+                                      ? (_isArabic
+                                          ? 'الاسم الكامل مطلوب.'
+                                          : 'Full name is required.')
+                                      : null,
                             ),
                             const SizedBox(height: 16),
                           ],
 
                           TextFormField(
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             autofillHints: const [AutofillHints.email],
                             decoration: InputDecoration(
-                              labelText: _isArabic
-                                  ? 'البريد الإلكتروني'
-                                  : 'Email',
+                              labelText:
+                                  _isArabic ? 'البريد الإلكتروني' : 'Email',
                               prefixIcon: const Icon(
                                 Icons.email_outlined,
                                 color: Color(0xFF94A3B8),
                               ),
                               filled: true,
-                              fillColor: const Color(0xFF0F172A),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide.none,
@@ -428,7 +415,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                       child: DropdownButton<String>(
                                         value: _selectedCountryCode,
                                         isExpanded: true,
-                                        dropdownColor: const Color(0xFF1E293B),
+                                        dropdownColor: Theme.of(
+                                          context,
+                                        ).colorScheme.surfaceContainerHighest,
                                         icon: const Icon(
                                           Icons.arrow_drop_down,
                                           color: Color(0xFF94A3B8),
@@ -440,23 +429,21 @@ class _AuthScreenState extends State<AuthScreen> {
                                         ),
                                         onChanged: (String? newValue) =>
                                             setState(
-                                              () => _selectedCountryCode =
-                                                  newValue!,
-                                            ),
+                                          () =>
+                                              _selectedCountryCode = newValue!,
+                                        ),
                                         items: _countries
                                             .map<DropdownMenuItem<String>>((
-                                              Map<String, String> country,
-                                            ) {
-                                              return DropdownMenuItem<String>(
-                                                value: country['code'],
-                                                child: Text(
-                                                  '${_isArabic ? country['name'] : country['nameEn']} ${country['code']}',
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              );
-                                            })
-                                            .toList(),
+                                          Map<String, String> country,
+                                        ) {
+                                          return DropdownMenuItem<String>(
+                                            value: country['code'],
+                                            child: Text(
+                                              '${_isArabic ? country['name'] : country['nameEn']} ${country['code']}',
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          );
+                                        }).toList(),
                                       ),
                                     ),
                                   ),
@@ -465,25 +452,19 @@ class _AuthScreenState extends State<AuthScreen> {
                                 Expanded(
                                   flex: 3,
                                   child: TextFormField(
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                    ),
                                     controller: _phoneController,
                                     keyboardType: TextInputType.phone,
                                     autofillHints: const [
                                       AutofillHints.telephoneNumber,
                                     ],
                                     decoration: InputDecoration(
-                                      labelText: _isArabic
-                                          ? 'رقم الهاتف'
-                                          : 'Phone',
+                                      labelText:
+                                          _isArabic ? 'رقم الهاتف' : 'Phone',
                                       prefixIcon: const Icon(
                                         Icons.phone_outlined,
                                         color: Color(0xFF94A3B8),
                                       ),
                                       filled: true,
-                                      fillColor: const Color(0xFF0F172A),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide: BorderSide.none,
@@ -498,10 +479,10 @@ class _AuthScreenState extends State<AuthScreen> {
                                     ),
                                     validator: (value) =>
                                         value == null || value.trim().length < 6
-                                        ? (_isArabic
-                                              ? 'أدخل رقم هاتف صحيحاً.'
-                                              : 'Enter a valid phone number.')
-                                        : null,
+                                            ? (_isArabic
+                                                ? 'أدخل رقم هاتف صحيحاً.'
+                                                : 'Enter a valid phone number.')
+                                            : null,
                                   ),
                                 ),
                               ],
@@ -510,10 +491,6 @@ class _AuthScreenState extends State<AuthScreen> {
                           ],
 
                           TextFormField(
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
                             controller: _passwordController,
                             obscureText: _obscurePassword,
                             autofillHints: _isLogin
@@ -528,11 +505,11 @@ class _AuthScreenState extends State<AuthScreen> {
                               suffixIcon: IconButton(
                                 tooltip: _obscurePassword
                                     ? (_isArabic
-                                          ? 'إظهار كلمة المرور'
-                                          : 'Show password')
+                                        ? 'إظهار كلمة المرور'
+                                        : 'Show password')
                                     : (_isArabic
-                                          ? 'إخفاء كلمة المرور'
-                                          : 'Hide password'),
+                                        ? 'إخفاء كلمة المرور'
+                                        : 'Hide password'),
                                 onPressed: () => setState(
                                   () => _obscurePassword = !_obscurePassword,
                                 ),
@@ -543,7 +520,6 @@ class _AuthScreenState extends State<AuthScreen> {
                                 ),
                               ),
                               filled: true,
-                              fillColor: const Color(0xFF0F172A),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide.none,
@@ -576,9 +552,8 @@ class _AuthScreenState extends State<AuthScreen> {
                             Align(
                               alignment: AlignmentDirectional.centerEnd,
                               child: TextButton(
-                                onPressed: _isLoading
-                                    ? null
-                                    : _sendPasswordResetEmail,
+                                onPressed:
+                                    _isLoading ? null : _sendPasswordResetEmail,
                                 child: Text(
                                   _isArabic
                                       ? 'نسيت كلمة المرور؟'
@@ -590,10 +565,6 @@ class _AuthScreenState extends State<AuthScreen> {
                           if (!_isLogin) ...[
                             const SizedBox(height: 16),
                             TextFormField(
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
                               controller: _confirmPasswordController,
                               obscureText: _obscureConfirmPassword,
                               decoration: InputDecoration(
@@ -607,11 +578,11 @@ class _AuthScreenState extends State<AuthScreen> {
                                 suffixIcon: IconButton(
                                   tooltip: _obscureConfirmPassword
                                       ? (_isArabic
-                                            ? 'إظهار كلمة المرور'
-                                            : 'Show password')
+                                          ? 'إظهار كلمة المرور'
+                                          : 'Show password')
                                       : (_isArabic
-                                            ? 'إخفاء كلمة المرور'
-                                            : 'Hide password'),
+                                          ? 'إخفاء كلمة المرور'
+                                          : 'Hide password'),
                                   onPressed: () => setState(
                                     () => _obscureConfirmPassword =
                                         !_obscureConfirmPassword,
@@ -623,7 +594,6 @@ class _AuthScreenState extends State<AuthScreen> {
                                   ),
                                 ),
                                 filled: true,
-                                fillColor: const Color(0xFF0F172A),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide.none,
@@ -732,8 +702,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                                       ? 'بيع المهارات'
                                                       : 'Sell skills',
                                                   icon: Icons.terminal,
-                                                  isSelected:
-                                                      _selectedRole ==
+                                                  isSelected: _selectedRole ==
                                                       'developer',
                                                   onTap: () => setState(
                                                     () => _selectedRole =
@@ -758,8 +727,7 @@ class _AuthScreenState extends State<AuthScreen> {
                             width: double.infinity,
                             height: 52,
                             child: ElevatedButton(
-                              onPressed:
-                                  _isLoading ||
+                              onPressed: _isLoading ||
                                       (_isLogin && !_isLoginInputValid)
                                   ? null
                                   : _submit,
@@ -788,8 +756,8 @@ class _AuthScreenState extends State<AuthScreen> {
                                       _isLogin
                                           ? (_isArabic ? 'دخول' : 'Sign In')
                                           : (_isArabic
-                                                ? 'إنشاء حساب'
-                                                : 'Create Account'),
+                                              ? 'إنشاء حساب'
+                                              : 'Create Account'),
                                       style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -806,11 +774,11 @@ class _AuthScreenState extends State<AuthScreen> {
                               text: TextSpan(
                                 text: _isLogin
                                     ? (_isArabic
-                                          ? "ليس لديك حساب؟ "
-                                          : "Don't have an account? ")
+                                        ? "ليس لديك حساب؟ "
+                                        : "Don't have an account? ")
                                     : (_isArabic
-                                          ? "لديك حساب بالفعل؟ "
-                                          : "Already have an account? "),
+                                        ? "لديك حساب بالفعل؟ "
+                                        : "Already have an account? "),
                                 style: const TextStyle(
                                   color: Color(0xFF94A3B8),
                                   fontSize: 14,
