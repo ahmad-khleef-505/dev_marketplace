@@ -239,12 +239,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
             return SafeArea(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    16,
-                    12,
-                    16,
-                    16 + MediaQuery.viewInsetsOf(context).bottom,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                   child: GlassPanel(
                     padding: const EdgeInsets.all(24),
                     borderRadius: 24,
@@ -445,121 +440,166 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 16,
-        title: Row(
-          children: [
-            Expanded(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 680),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: _isSearchFocused && kIsWeb
-                          ? [
-                              BoxShadow(
-                                color: const Color(
-                                  0xFF3B82F6,
-                                ).withValues(alpha: 0.22),
-                                blurRadius: 22,
-                                spreadRadius: 1,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      focusNode: _searchFocusNode,
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value.toLowerCase();
-                        });
-                      },
-                      style: TextStyle(color: colorScheme.onSurface),
-                      decoration: InputDecoration(
-                        hintText: 'ابحث عن تطبيق، موقع، أو تقنية...',
-                        hintStyle: GoogleFonts.cairo(
-                          color: colorScheme.onSurfaceVariant,
-                          fontSize: 13,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search_rounded,
-                          color: colorScheme.primary,
-                        ),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? IconButton(
-                                icon: Icon(
-                                  Icons.clear_rounded,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  setState(() => _searchQuery = '');
-                                },
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: colorScheme.surfaceContainerHighest,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                        ),
-                        enabledBorder: OutlineInputBorder(
+      body: CustomScrollView(
+        controller: _marketplaceScrollController,
+        slivers: [
+          SliverAppBar(
+            floating: true,
+            snap: true,
+            pinned: false,
+            toolbarHeight: 72,
+            expandedHeight: 132,
+            titleSpacing: 16,
+            backgroundColor: colorScheme.surface,
+            surfaceTintColor: Colors.transparent,
+            title: Row(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 680),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(
-                            color: _isSearchFocused
-                                ? colorScheme.primary.withValues(alpha: 0.55)
-                                : colorScheme.outlineVariant,
+                          boxShadow: _isSearchFocused && kIsWeb
+                              ? [
+                                  BoxShadow(
+                                    color: colorScheme.primary.withValues(
+                                      alpha: 0.22,
+                                    ),
+                                    blurRadius: 22,
+                                    spreadRadius: 1,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          focusNode: _searchFocusNode,
+                          scrollPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 24,
                           ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(
-                            color: colorScheme.primary,
-                            width: 1.2,
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value.toLowerCase();
+                            });
+                          },
+                          style: TextStyle(color: colorScheme.onSurface),
+                          decoration: InputDecoration(
+                            hintText: 'ابحث عن تطبيق، موقع، أو تقنية...',
+                            hintStyle: GoogleFonts.cairo(
+                              color: colorScheme.onSurfaceVariant,
+                              fontSize: 13,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.search_rounded,
+                              color: colorScheme.primary,
+                            ),
+                            suffixIcon: _searchQuery.isNotEmpty
+                                ? IconButton(
+                                    icon: Icon(
+                                      Icons.clear_rounded,
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() => _searchQuery = '');
+                                    },
+                                  )
+                                : null,
+                            filled: true,
+                            fillColor: colorScheme.surfaceContainerHighest,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 14,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                color: _isSearchFocused
+                                    ? colorScheme.primary
+                                        .withValues(alpha: 0.55)
+                                    : colorScheme.outlineVariant,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                color: colorScheme.primary,
+                                width: 1.2,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              tooltip: 'الفلاتر المتقدمة',
-              icon: Icon(
-                Icons.tune_rounded,
-                color: _isFilterActive ? const Color(0xFF60A5FA) : Colors.white,
-              ),
-              onPressed: _showFilterSheet,
-            ),
-          ],
-        ),
-      ),
-      body: SingleChildScrollView(
-        controller: _marketplaceScrollController,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1500),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SmartPriceMatcher(),
-                _buildSection(
-                  'التطبيقات المميزة',
-                  'تطبيق جوال',
-                  Icons.phone_android,
+                const SizedBox(width: 8),
+                IconButton(
+                  tooltip: 'الفلاتر المتقدمة',
+                  icon: Icon(
+                    Icons.tune_rounded,
+                    color: _isFilterActive
+                        ? colorScheme.primary
+                        : colorScheme.onSurface,
+                  ),
+                  onPressed: _showFilterSheet,
                 ),
-                _buildSection('المواقع المميزة', 'موقع ويب', Icons.web),
-                _buildCustomProjectRequest(),
-                const SizedBox(height: 32),
-                const AppFooter(),
               ],
             ),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Align(
+                alignment: AlignmentDirectional.bottomStart,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(24, 0, 24, 10),
+                  child: Row(
+                    children: [
+                      Icon(Icons.waving_hand_rounded,
+                          color: colorScheme.primary, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'مرحباً بك في سوق المبرمجين - مدير التطبيق ومبرمجه: أحمد الخليف',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
+          SliverToBoxAdapter(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1500),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SmartPriceMatcher(),
+                    _buildSection(
+                      'التطبيقات المميزة',
+                      'تطبيق جوال',
+                      Icons.phone_android,
+                    ),
+                    _buildSection('المواقع المميزة', 'موقع ويب', Icons.web),
+                    _buildCustomProjectRequest(),
+                    const SizedBox(height: 32),
+                    const AppFooter(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

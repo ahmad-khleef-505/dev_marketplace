@@ -12,7 +12,9 @@ import '../repositories/user_repository.dart';
 import '../widgets/app_footer.dart';
 
 class DeveloperDashboard extends StatefulWidget {
-  const DeveloperDashboard({super.key});
+  const DeveloperDashboard({super.key, this.onBack});
+
+  final VoidCallback? onBack;
 
   @override
   State<DeveloperDashboard> createState() => _DeveloperDashboardState();
@@ -217,236 +219,266 @@ class _DeveloperDashboardState extends State<DeveloperDashboard> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('إضافة مشروع جديد'),
-        centerTitle: true,
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) => SingleChildScrollView(
-          padding: EdgeInsets.all(isCompact ? 16 : 24),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 760),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(isCompact ? 16 : 24),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: colorScheme.outlineVariant),
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          FormField<Uint8List>(
-                            key: _imageFieldKey,
-                            validator: (value) => _selectedImageBytes == null
-                                ? 'يرجى اختيار صورة للمشروع'
-                                : null,
-                            builder: (field) => Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(
+                  isCompact ? 16 : 24,
+                  72,
+                  isCompact ? 16 : 24,
+                  24,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 760),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(isCompact ? 16 : 24),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(16),
+                            border:
+                                Border.all(color: colorScheme.outlineVariant),
+                          ),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (_selectedImageBytes != null)
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.memory(
-                                      _selectedImageBytes!,
-                                      height: isCompact ? 180 : 240,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                const SizedBox(height: 12),
-                                OutlinedButton.icon(
-                                  onPressed: _isLoading
-                                      ? null
-                                      : () async {
-                                          await _pickProjectImage();
-                                          field.didChange(_selectedImageBytes);
-                                        },
-                                  icon:
-                                      const Icon(Icons.photo_library_outlined),
-                                  label: Text(
-                                    _selectedImage == null
-                                        ? 'اختيار صورة من المعرض'
-                                        : 'تغيير الصورة المختارة',
+                                FormField<Uint8List>(
+                                  key: _imageFieldKey,
+                                  validator: (value) =>
+                                      _selectedImageBytes == null
+                                          ? 'يرجى اختيار صورة للمشروع'
+                                          : null,
+                                  builder: (field) => Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      if (_selectedImageBytes != null)
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          child: Image.memory(
+                                            _selectedImageBytes!,
+                                            height: isCompact ? 180 : 240,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      const SizedBox(height: 12),
+                                      OutlinedButton.icon(
+                                        onPressed: _isLoading
+                                            ? null
+                                            : () async {
+                                                await _pickProjectImage();
+                                                field.didChange(
+                                                    _selectedImageBytes);
+                                              },
+                                        icon: const Icon(
+                                            Icons.photo_library_outlined),
+                                        label: Text(
+                                          _selectedImage == null
+                                              ? 'اختيار صورة من المعرض'
+                                              : 'تغيير الصورة المختارة',
+                                        ),
+                                      ),
+                                      if (field.errorText != null) ...[
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          field.errorText!,
+                                          style: TextStyle(
+                                              color: colorScheme.error),
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ),
-                                if (field.errorText != null) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    field.errorText!,
-                                    style: TextStyle(color: colorScheme.error),
+                                const SizedBox(height: 24),
+
+                                TextFormField(
+                                  controller: _titleController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'عنوان المشروع',
+                                    helperText:
+                                        'اكتب اسماً جذاباً وواضحاً للمشروع',
+                                    prefixIcon: Icon(Icons.title),
                                   ),
-                                ],
+                                  validator: (value) =>
+                                      value!.isEmpty ? 'هذا الحقل مطلوب' : null,
+                                ),
+                                const SizedBox(height: 16),
+
+                                TextFormField(
+                                  controller: _descController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'وصف المشروع',
+                                    helperText:
+                                        'اشرح مميزات المشروع والتقنيات التي يستخدمها',
+                                    prefixIcon: Icon(Icons.description),
+                                  ),
+                                  maxLines: 4,
+                                  validator: (value) =>
+                                      value!.isEmpty ? 'هذا الحقل مطلوب' : null,
+                                ),
+                                const SizedBox(height: 16),
+
+                                TextFormField(
+                                  controller: _languageController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'لغة البرمجة',
+                                    hintText: 'مثال: Dart أو JavaScript',
+                                    prefixIcon: Icon(Icons.code),
+                                  ),
+                                  validator: (value) =>
+                                      value == null || value.trim().isEmpty
+                                          ? 'يرجى إدخال لغة البرمجة'
+                                          : null,
+                                ),
+                                const SizedBox(height: 16),
+
+                                TextFormField(
+                                  controller: _techStackController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'التقنيات المستخدمة',
+                                    hintText:
+                                        'افصل التقنيات بفواصل، مثال: Flutter, Firebase',
+                                    prefixIcon: Icon(Icons.developer_board),
+                                  ),
+                                  validator: (value) =>
+                                      value == null || value.trim().isEmpty
+                                          ? 'يرجى إدخال تقنية واحدة على الأقل'
+                                          : null,
+                                ),
+                                const SizedBox(height: 16),
+
+                                TextFormField(
+                                  controller: _phoneController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'رقم هاتف المطور',
+                                    helperText:
+                                        'لن يظهر للعملاء، مخصص للتواصل من قبل الإدارة فقط',
+                                    prefixIcon: Icon(Icons.phone),
+                                  ),
+                                  keyboardType: TextInputType.phone,
+                                  validator: (value) =>
+                                      value!.isEmpty ? 'هذا الحقل مطلوب' : null,
+                                ),
+                                const SizedBox(height: 16),
+
+                                DropdownButtonFormField<String>(
+                                  initialValue: _projectType,
+                                  decoration: const InputDecoration(
+                                    labelText: 'نوع المشروع',
+                                    prefixIcon: Icon(Icons.devices),
+                                  ),
+                                  dropdownColor:
+                                      colorScheme.surfaceContainerHighest,
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value: 'app',
+                                      child: Text('تطبيق (App)'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'website',
+                                      child: Text('موقع (Website)'),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    if (value != null) {
+                                      setState(() => _projectType = value);
+                                    }
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+
+                                if (isCompact) ...[
+                                  categoryField,
+                                  const SizedBox(height: 16),
+                                  priceField,
+                                ] else
+                                  Row(
+                                    children: [
+                                      Expanded(child: categoryField),
+                                      const SizedBox(width: 16),
+                                      Expanded(child: priceField),
+                                    ],
+                                  ),
+                                const SizedBox(height: 16),
+
+                                // رابط المعاينة
+                                TextFormField(
+                                  controller: _demoLinkController,
+                                  decoration: const InputDecoration(
+                                    labelText: 'رابط تجريبي (اختياري)',
+                                    helperText:
+                                        'رابط لموقع أو فيديو يعرض المشروع',
+                                    prefixIcon: Icon(Icons.link),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+
+                                // زر الرفع
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 52,
+                                  child: ElevatedButton(
+                                    onPressed:
+                                        _isLoading ? null : _uploadProject,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: colorScheme.secondary,
+                                      foregroundColor: colorScheme.onSecondary,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: _isLoading
+                                        ? const SizedBox(
+                                            height: 24,
+                                            width: 24,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Text(
+                                            'نشر المشروع للمراجعة',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 24),
-
-                          TextFormField(
-                            controller: _titleController,
-                            decoration: const InputDecoration(
-                              labelText: 'عنوان المشروع',
-                              helperText: 'اكتب اسماً جذاباً وواضحاً للمشروع',
-                              prefixIcon: Icon(Icons.title),
-                            ),
-                            validator: (value) =>
-                                value!.isEmpty ? 'هذا الحقل مطلوب' : null,
-                          ),
-                          const SizedBox(height: 16),
-
-                          TextFormField(
-                            controller: _descController,
-                            decoration: const InputDecoration(
-                              labelText: 'وصف المشروع',
-                              helperText:
-                                  'اشرح مميزات المشروع والتقنيات التي يستخدمها',
-                              prefixIcon: Icon(Icons.description),
-                            ),
-                            maxLines: 4,
-                            validator: (value) =>
-                                value!.isEmpty ? 'هذا الحقل مطلوب' : null,
-                          ),
-                          const SizedBox(height: 16),
-
-                          TextFormField(
-                            controller: _languageController,
-                            decoration: const InputDecoration(
-                              labelText: 'لغة البرمجة',
-                              hintText: 'مثال: Dart أو JavaScript',
-                              prefixIcon: Icon(Icons.code),
-                            ),
-                            validator: (value) =>
-                                value == null || value.trim().isEmpty
-                                    ? 'يرجى إدخال لغة البرمجة'
-                                    : null,
-                          ),
-                          const SizedBox(height: 16),
-
-                          TextFormField(
-                            controller: _techStackController,
-                            decoration: const InputDecoration(
-                              labelText: 'التقنيات المستخدمة',
-                              hintText:
-                                  'افصل التقنيات بفواصل، مثال: Flutter, Firebase',
-                              prefixIcon: Icon(Icons.developer_board),
-                            ),
-                            validator: (value) =>
-                                value == null || value.trim().isEmpty
-                                    ? 'يرجى إدخال تقنية واحدة على الأقل'
-                                    : null,
-                          ),
-                          const SizedBox(height: 16),
-
-                          TextFormField(
-                            controller: _phoneController,
-                            decoration: const InputDecoration(
-                              labelText: 'رقم هاتف المطور',
-                              helperText:
-                                  'لن يظهر للعملاء، مخصص للتواصل من قبل الإدارة فقط',
-                              prefixIcon: Icon(Icons.phone),
-                            ),
-                            keyboardType: TextInputType.phone,
-                            validator: (value) =>
-                                value!.isEmpty ? 'هذا الحقل مطلوب' : null,
-                          ),
-                          const SizedBox(height: 16),
-
-                          DropdownButtonFormField<String>(
-                            initialValue: _projectType,
-                            decoration: const InputDecoration(
-                              labelText: 'نوع المشروع',
-                              prefixIcon: Icon(Icons.devices),
-                            ),
-                            dropdownColor: colorScheme.surfaceContainerHighest,
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'app',
-                                child: Text('تطبيق (App)'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'website',
-                                child: Text('موقع (Website)'),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              if (value != null) {
-                                setState(() => _projectType = value);
-                              }
-                            },
-                          ),
-                          const SizedBox(height: 16),
-
-                          if (isCompact) ...[
-                            categoryField,
-                            const SizedBox(height: 16),
-                            priceField,
-                          ] else
-                            Row(
-                              children: [
-                                Expanded(child: categoryField),
-                                const SizedBox(width: 16),
-                                Expanded(child: priceField),
-                              ],
-                            ),
-                          const SizedBox(height: 16),
-
-                          // رابط المعاينة
-                          TextFormField(
-                            controller: _demoLinkController,
-                            decoration: const InputDecoration(
-                              labelText: 'رابط تجريبي (اختياري)',
-                              helperText: 'رابط لموقع أو فيديو يعرض المشروع',
-                              prefixIcon: Icon(Icons.link),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // زر الرفع
-                          SizedBox(
-                            width: double.infinity,
-                            height: 52,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _uploadProject,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: colorScheme.secondary,
-                                foregroundColor: colorScheme.onSecondary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : const Text(
-                                      'نشر المشروع للمراجعة',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 24),
+                        const AppFooter(),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  const AppFooter(),
-                ],
+                ),
               ),
             ),
-          ),
+            PositionedDirectional(
+              top: 8,
+              start: 8,
+              child: Material(
+                color: colorScheme.surfaceContainerHighest,
+                shape: const CircleBorder(),
+                child: IconButton(
+                  tooltip: 'العودة للرئيسية',
+                  onPressed: widget.onBack ?? () => Navigator.maybePop(context),
+                  icon: const Icon(Icons.arrow_back_rounded),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

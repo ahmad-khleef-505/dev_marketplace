@@ -50,7 +50,10 @@ class _MainScreenState extends State<MainScreen> {
           label: 'إضافة مشروع',
           icon: Icons.add_box_outlined,
           selectedIcon: Icons.add_box,
-          screen: const DeveloperDashboard(),
+          screen: DeveloperDashboard(
+            onBack: () => setState(() => _currentIndex = 0),
+          ),
+          hideChrome: true,
         ),
       _MainDestination(
         label: 'المفضلة',
@@ -76,6 +79,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
     ];
     final selectedIndex = _currentIndex.clamp(0, destinations.length - 1);
+    final hideChrome = destinations[selectedIndex].hideChrome;
     final isDesktopWeb = kIsWeb && MediaQuery.sizeOf(context).width >= 900;
 
     final content = KeyedSubtree(
@@ -83,8 +87,8 @@ class _MainScreenState extends State<MainScreen> {
       child: destinations[selectedIndex].screen,
     );
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: isDesktopWeb
+      resizeToAvoidBottomInset: false,
+      appBar: isDesktopWeb && !hideChrome
           ? AppBar(
               titleSpacing: 28,
               title: Row(
@@ -148,7 +152,8 @@ class _MainScreenState extends State<MainScreen> {
           const Positioned(top: 0, left: 80, child: _AmbientGlow()),
           Column(
             children: [
-              _buildWelcomeBanner(isDesktopWeb: isDesktopWeb),
+              if (selectedIndex != 0 && !hideChrome)
+                _buildWelcomeBanner(isDesktopWeb: isDesktopWeb),
               Expanded(
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
@@ -169,21 +174,22 @@ class _MainScreenState extends State<MainScreen> {
                   child: content,
                 ),
               ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: RepaintBoundary(
-                    child: _FloatingNavigationBar(
-                      destinations: destinations,
-                      selectedIndex: selectedIndex,
-                      onSelected: (index) =>
-                          setState(() => _currentIndex = index),
-                      isDesktop: isDesktopWeb,
+              if (!hideChrome)
+                SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: RepaintBoundary(
+                      child: _FloatingNavigationBar(
+                        destinations: destinations,
+                        selectedIndex: selectedIndex,
+                        onSelected: (index) =>
+                            setState(() => _currentIndex = index),
+                        isDesktop: isDesktopWeb,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ],
@@ -273,12 +279,14 @@ class _MainDestination {
     required this.icon,
     required this.selectedIcon,
     required this.screen,
+    this.hideChrome = false,
   });
 
   final String label;
   final IconData icon;
   final IconData selectedIcon;
   final Widget screen;
+  final bool hideChrome;
 }
 
 class _FloatingNavigationBar extends StatelessWidget {

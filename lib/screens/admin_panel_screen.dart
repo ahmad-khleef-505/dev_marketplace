@@ -645,6 +645,23 @@ class _ProjectList extends StatelessWidget {
                 FutureBuilder<String?>(
                   future: developerPhoneFuture,
                   builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Text(
+                        'تعذر تحميل رقم المطوّر: ${snapshot.error}',
+                        style: const TextStyle(
+                          color: Color(0xFFEF4444),
+                          fontSize: 13,
+                        ),
+                      );
+                    }
+                    if (snapshot.connectionState != ConnectionState.done) {
+                      return const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      );
+                    }
+
                     final phone = snapshot.data?.trim() ?? '';
                     return Row(
                       children: [
@@ -1290,7 +1307,14 @@ class _PurchaseOrdersTab extends StatefulWidget {
 
 class _PurchaseOrdersTabState extends State<_PurchaseOrdersTab> {
   final PurchaseService _purchaseService = PurchaseService();
+  final Map<String, Future<String?>> _developerPhoneFutures = {};
   String? _processingOrderId;
+
+  Future<String?> _getDeveloperPhone(String projectId) =>
+      _developerPhoneFutures.putIfAbsent(
+        projectId,
+        () => context.read<AdminRepository>().getDeveloperPhone(projectId),
+      );
 
   Future<void> _approveOrder(String orderId) async {
     final confirmed = await showDialog<bool>(
@@ -1472,10 +1496,32 @@ class _PurchaseOrdersTabState extends State<_PurchaseOrdersTab> {
                     ),
                   if (projectId.isNotEmpty)
                     FutureBuilder<String?>(
-                      future: context
-                          .read<AdminRepository>()
-                          .getDeveloperPhone(projectId),
+                      future: _getDeveloperPhone(projectId),
                       builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return Text(
+                            'تعذر تحميل رقم المطوّر: ${snapshot.error}',
+                            style: const TextStyle(
+                              color: Color(0xFFEF4444),
+                            ),
+                          );
+                        }
+                        if (snapshot.connectionState != ConnectionState.done) {
+                          return const Row(
+                            children: [
+                              SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Text('جارٍ تحميل رقم المطوّر...'),
+                            ],
+                          );
+                        }
+
                         final phone = snapshot.data?.trim() ?? '';
                         if (phone.isEmpty) {
                           return const Text(

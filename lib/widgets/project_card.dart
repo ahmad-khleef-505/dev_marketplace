@@ -483,23 +483,38 @@ class ProjectCard extends StatelessWidget {
                 textDirection: TextDirection.ltr,
                 child: Row(
                   children: [
+                    SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Hero(
+                          tag: 'project-image-$projectId',
+                          child: _ProjectCardImage(imageUrl: imageUrl),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Directionality(
                         textDirection: TextDirection.rtl,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(
-                                    color: colorScheme.onSurface,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 44),
+                              child: Text(
+                                title,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      color: colorScheme.onSurface,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
                             ),
                             const SizedBox(height: 6),
                             Row(
@@ -570,18 +585,6 @@ class ProjectCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    SizedBox(
-                      width: 100,
-                      height: 100,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Hero(
-                          tag: 'project-image-$projectId',
-                          child: _ProjectCardImage(imageUrl: imageUrl),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -617,25 +620,21 @@ class ProjectCard extends StatelessWidget {
         Positioned(
           top: 8,
           right: 8,
-          child: Material(
-            color: colorScheme.surface.withValues(alpha: 0.82),
-            shape: const CircleBorder(),
-            child: _FavoriteProjectButton(
-              projectId: projectId,
-              title: title,
-              developerUid: developerUid,
-              developerName: developerName,
-              price: price,
-              imageUrl: imageUrl,
-              projectType: projectType,
-              techStack: techStack,
-              rating: rating,
-              ratingCount: ratingCount,
-              description: description,
-              demoLink: demoLink,
-              isEscrow: isEscrow,
-              views: views,
-            ),
+          child: _FavoriteProjectButton(
+            projectId: projectId,
+            title: title,
+            developerUid: developerUid,
+            developerName: developerName,
+            price: price,
+            imageUrl: imageUrl,
+            projectType: projectType,
+            techStack: techStack,
+            rating: rating,
+            ratingCount: ratingCount,
+            description: description,
+            demoLink: demoLink,
+            isEscrow: isEscrow,
+            views: views,
           ),
         ),
       ],
@@ -664,7 +663,7 @@ class _HoverProjectCardState extends State<_HoverProjectCard> {
         duration: const Duration(milliseconds: 180),
         transform: Matrix4.translationValues(0, _isHovered ? -6 : 0, 0),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: _isHovered
               ? [
                   BoxShadow(
